@@ -49,7 +49,11 @@ if (isset($_POST['submit'])){
 
 		$result=$conn->query($query); */
 		
+<<<<<<< HEAD
 		echo "<script>window.location='preTripTable.html';</script>";
+=======
+		echo "<script>window.location='preTripTable.php';</script>";
+>>>>>>> 1dacf54ec6af74c955fdc15477f459a6a99dab8a
 		//$conn->close();
 
 	//}
