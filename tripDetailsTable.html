@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<h1>2. Details of Trip</h1>
+<form method="post" action="tripDetailsTable.php">
+	<script> 
+	function dis1(){ 
+		document.all["purpose"].disabled=true
+		document.all["cName"].disabled=false 
+		document.all["cURL"].disabled=false 
+		document.all["city"].disabled=false 
+		document.all["country"].disabled=false 
+		document.all["ptitle"].disabled=false 
+		document.all["authors"].disabled=false 
+	}
+	function dis2(){ 
+		document.all["purpose"].disabled=false
+		document.all["cName"].disabled=true 
+		document.all["cURL"].disabled=true 
+		document.all["city"].disabled=true 
+		document.all["country"].disabled=true 
+		document.all["ptitle"].disabled=true 
+		document.all["authors"].disabled=true 
+	}
+	</script> 
+<script>
+   f1();
+</script>
+	<label><input type="radio" name="check" onclick="dis1()" checked ></label><label>Name of Conference:<input type="text" name="cName"></label>
+	<br/><br/>
+	<label>Conference URL:<input type="text" name="cURL"></label>
+	<br/><br/>
+	<label>City:<input type="text" name="city"></label>
+	<br/><br/>
+	<label>Country:<input type="text" name="country"></label>
+	<br/><br/>
+	<label>Paper Title:<input type="text" name="ptitle"></label>
+	<br/><br/>
+	<label>Authors:<input type="text" name="authors"></label>
+	<br/><br/>
+	<label><input type="radio" name="check" onclick="dis2()"></label><label>Other (Please describe purpose of trip):<input type="text" name="purpose"></label>
+	<button type="submit" name="submit" style="float:right">submit</button>
+</form>
+</html>
