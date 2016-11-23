@@ -1,0 +1,1055 @@
+﻿@model SupervisorNew1.Models.ApplicationDetail
+
+@{
+    ViewBag.Title = "Blank";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+            <table class="col-lg-12" style="min-width:100%">
+                <tr class="page-header">
+                    @if (Model.role == 2 && Model.status == 3)
+                    {
+                        <td class="col-lg-8">
+                            <h2>Application Detail</h2>
+
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="col-lg-10">
+                            <h2>Application Detail</h2>
+
+                        </td>
+                    }
+                    @if (Model.status == 3 && Model.role == 2 && Model.isFundDispatched == 0)
+                    {
+
+                        <td>
+                            <form method="post">
+                                <button type="submit" value="dispatchFund" name="operation" class="btn btn-outline btn-primary" onclick="return confirm('Confirm payment of funds to student?')">Confirm Payment</button>
+                                <input name="tripId" hidden="hidden" value=@Model.tripID />
+                            </form>
+
+                        </td>
+
+                    }
+                    else if (Model.status == 3 && Model.role == 2 && Model.isFundDispatched == 1)
+                    {
+                        <td>
+                            <div>Funds Dispatched</div>
+
+                        </td>
+                    }
+
+
+                    <td>
+                        @if (Model.messageCount > 1)
+                        {
+                            <button type="button" class="btn btn-outline btn-primary" data-toggle="dropdown" style="margin-left:-20%" href="#">@Model.messageCount Messages</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-outline btn-primary" data-toggle="dropdown" style="margin-left:-20%" href="#">@Model.messageCount Message</button>
+                        }
+                        
+                        <ul class="dropdown-menu dropdown-messages" style="left:30%;right:5%; word-break: break-all; ">
+
+                            <li>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      
+                                        <i class="fa fa-envelope-o"></i> All Messages 
+                                        <button type="button" id="btnMessage" value="message" data-toggle="modal" data-target="#myModal" name="operation" class="btn-link" style="float:right;" >
+                                            <i class="fa fa-mail-reply"></i>
+                                        </button>
+                                        
+
+                                    </div>
+                                    <!-- /.panel-heading -->
+                                    <div class="panel-body">
+                                        <ul class="timeline">
+                                @for (int i = 0; i < @Model.messageList.Count; i++) { 
+                                    if(Model.messageList[i].isYours == 1)
+                                    { 
+                                            <li>
+                                                <div class="timeline-badge">
+                                                    <i class="fa fa-paper-plane"></i>
+                                                </div>
+                                                <div class="timeline-panel">
+                                                    <div class="timeline-heading">
+                                                        <h4 class="timeline-title"> @Model.messageList[i].messageTitle</h4>
+                                                        <p>
+                                                            <small class="text-muted"><i class="fa fa-clock-o"></i> @Model.messageList[i].timeStamp</small>
+                                                        </p>
+                                                    </div>
+                                                    <div class="timeline-body">
+                                                        <p>@Model.messageList[i].messageBody</p>
+                                                        <br />
+                                                        <p>-&nbsp;@Model.messageList[i].senderName</p>
+                                                    </div>
+                                                   
+                                                
+                                                </div>
+                                            </li>
+                                
+                                 }
+                                 else
+                                 {
+                                        <li class="timeline-inverted">
+                                            <div class="timeline-badge">
+                                                <i class="fa fa-paper-plane"></i>
+                                            </div>
+                                            <div class="timeline-panel">
+                                                <div class="timeline-heading">
+                                                    <h4 class="timeline-title"> @Model.messageList[i].messageTitle</h4>
+                                                    <p>
+                                                        <small class="text-muted"><i class="fa fa-clock-o"></i> @Model.messageList[i].timeStamp</small>
+                                                    </p>
+                                                </div>
+                                                <div class="timeline-body">
+                                                    <p>@Model.messageList[i].messageBody</p>
+                                                    <br />
+                                                    <p>-&nbsp;@Model.messageList[i].senderName</p>
+                                                </div>
+                                            </div>
+                                        </li>
+                                 }
+
+                                } 
+                                            <!--
+                                            <li class="timeline-inverted">
+                                                <div class="timeline-badge warning">
+                                                    <i class="fa fa-credit-card"></i>
+                                                </div>
+                                                <div class="timeline-panel">
+                                                    <div class="timeline-heading">
+                                                        <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                                    </div>
+                                                    <div class="timeline-body">
+                                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Autem dolorem quibusdam, tenetur commodi provident cumque magni voluptatem libero, quis rerum. Fugiat esse debitis optio, tempore. Animi officiis alias, officia repellendus.</p>
+                                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laudantium maiores odit qui est tempora eos, nostrum provident explicabo dignissimos debitis vel! Adipisci eius voluptates, ad aut recusandae minus eaque facere.</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="timeline-badge danger">
+                                                    <i class="fa fa-bomb"></i>
+                                                </div>
+                                                <div class="timeline-panel">
+                                                    <div class="timeline-heading">
+                                                        <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                                    </div>
+                                                    <div class="timeline-body">
+                                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellendus numquam facilis enim eaque, tenetur nam id qui vel velit similique nihil iure molestias aliquam, voluptatem totam quaerat, magni commodi quisquam.</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="timeline-inverted">
+                                                <div class="timeline-panel">
+                                                    <div class="timeline-heading">
+                                                        <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                                    </div>
+                                                    <div class="timeline-body">
+                                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptates est quaerat asperiores sapiente, eligendi, nihil. Itaque quos, alias sapiente rerum quas odit! Aperiam officiis quidem delectus libero, omnis ut debitis!</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="timeline-badge info">
+                                                    <i class="fa fa-save"></i>
+                                                </div>
+                                                <div class="timeline-panel">
+                                                    <div class="timeline-heading">
+                                                        <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                                    </div>
+                                                    <div class="timeline-body">
+                                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nobis minus modi quam ipsum alias at est molestiae excepturi delectus nesciunt, quibusdam debitis amet, beatae consequuntur impedit nulla qui! Laborum, atque.</p>
+                                                        <hr>
+                                                        <div class="btn-group">
+                                                            <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">
+                                                                <i class="fa fa-gear"></i>  <span class="caret"></span>
+                                                            </button>
+                                                            <ul class="dropdown-menu" role="menu">
+                                                                <li>
+                                                                    <a href="#">Action</a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="#">Another action</a>
+                                                                </li>
+                                                                <li>
+                                                                    <a href="#">Something else here</a>
+                                                                </li>
+                                                                <li class="divider"></li>
+                                                                <li>
+                                                                    <a href="#">Separated link</a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="timeline-panel">
+                                                    <div class="timeline-heading">
+                                                        <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                                    </div>
+                                                    <div class="timeline-body">
+                                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sequi fuga odio quibusdam. Iure expedita, incidunt unde quis nam! Quod, quisquam. Officia quam qui adipisci quas consequuntur nostrum sequi. Consequuntur, commodi.</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="timeline-inverted">
+                                                <div class="timeline-badge success">
+                                                    <i class="fa fa-graduation-cap"></i>
+                                                </div>
+                                                <div class="timeline-panel">
+                                                    <div class="timeline-heading">
+                                                        <h4 class="timeline-title">Lorem ipsum dolor</h4>
+                                                    </div>
+                                                    <div class="timeline-body">
+                                                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt obcaecati, quaerat tempore officia voluptas debitis consectetur culpa amet, accusamus dolorum fugiat, animi dicta aperiam, enim incidunt quisquam maxime neque eaque.</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                                -->
+                                        </ul>
+                                    </div>
+                                    <!-- /.panel-body -->
+                                </div>
+                                <!-- /.panel -->
+                            </li>
+
+        <!-- @for (int i = 0; i < @Model.messageList.Count; i++)
+        {
+
+            string dataTarget = "#messageModal" + i;
+            string divId = "modal" + @Model.messageList[i].messageId;
+            <li>
+                <a data-toggle="modal" data-target="@dataTarget" onclick="updateSeen(@Model.messageList[i].messageId,'@divId')">
+
+                    <div style="word-wrap:break-word">
+                        <strong id="@divId">(@Model.messageList[i].seenStatus) &nbsp; @Model.messageList[i].senderName - @Model.messageList[i].messageTitle</strong>
+
+                        <span style="word-wrap:break-word" class="pull-right text-muted">
+                            <em style="word-wrap:break-word">@Model.messageList[i].timeStamp</em>
+                        </span>
+
+                    </div>
+                    <br />
+                    <div style="word-break:break-all;height:auto;width:auto;">@Model.messageList[i].messageBody.Substring(0, Math.Min(Model.messageList[i].messageBody.Length, 50)).....</div>
+                </a>
+            </li>
+            <li class="divider"></li>
+
+
+
+
+        }
+--> 
+       <!--
+        <li>
+            <a class="text-center" href="#">
+                <strong>Read All Messages</strong>
+                <i class="fa fa-angle-right"></i>
+            </a>
+        </li>
+-->
+        </ul>
+        </td>
+
+        </tr>
+        <!-- /.dropdown-messages -->
+        </table>
+    </div>
+
+        <!-- /.col-lg-12 -->
+    </div>
+    @for (int i = 0; i < @Model.messageList.Count; i++)
+    {
+        string id= "messageModal"+i;
+        <div class="modal fade" id="@id" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Message Detail</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <input class="form-control" value="@Model.messageList[i].messageTitle" disabled="disabled" name="messageTitle" id="mTitleTbx">
+
+                            <br />
+                            <textarea rows="8" disabled="disabled" class="form-control" name="messageBody" id="tbxMBody">@Model.messageList[i].messageBody</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+    }
+    <br />
+    <!-- /.row -->
+    <div>
+        <p style="color:red">@ViewBag.message</p>
+    </div>
+     
+    <br />
+    <div class="row">
+        <div class="col-lg-4" style="width:80%">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h4><b>Detail of Student</b></h4>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive" style="margin-bottom:-25px">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-6"><b></b></th>
+                                    <th colspan="4">
+                                        <b>Student Inputs</b>
+                                    </th>
+                                    <!--
+                                    <th>
+                                        Small devices
+                                        <small>Tablets (&ge;768px)</small>
+                                    </th>
+                                    <th>
+                                        Medium devices
+                                        <small>Desktops (&ge;992px)</small>
+                                    </th>
+                                    <th>
+                                        Large devices
+                                        <small>Desktops (&ge;1200px)</small>
+                                    </th>
+                                        -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <td colspan="4">@Model.studentName</td>
+
+                                </tr>
+                                <tr>
+                                    <th>Email</th>
+                                    <td colspan="4">@Model.email</td>
+
+                                </tr>
+                                <tr>
+                                    <th>Date of 1st Registration</th>
+                                    <td colspan="4">
+                                        @Model.d1stReg
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <th>Months Completed</th>
+                                    <td colspan="4">@Model.monthsComp</td>
+                                </tr>
+                                <tr>
+                                    <th>Fee paid By<br />(e.g DTA, project(name), Supervisor, Self)</th>
+                                    <td colspan="4">@Model.feePayer</td>
+
+                                </tr>
+                                <tr>
+                                    <th>Fee last paid</th>
+                                    <td colspan="4">@Model.feeLPaid</td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+
+
+
+                </div>
+                <div class="panel-footer">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4" style="width:80%">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h4>  <b> Detail of Trip</b></h4>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive" style="margin-bottom:-25px">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-6"></th>
+                                    <th colspan="4">
+                                        <b>Student Inputs</b>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Name of Conference/Workshop</th>
+                                    <td colspan="4">@Model.conferenceName</td>
+
+                                </tr>
+                                <tr>
+                                    <th>Conference URL</th>
+                                    <td colspan="4">@Model.conferenceURL</td>
+
+                                </tr>
+                                <tr>
+                                    <th>City/Country</th>
+                                    <td colspan="4">
+                                        @Model.cityCountry
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <th>Paper Title</th>
+                                    <td colspan="4">@Model.paperTitle</td>
+                                </tr>
+                                <tr>
+                                    <th>Authors</th>
+                                    <td colspan="4">@Model.author</td>
+
+                                </tr>
+                                <tr>
+                                    <th>Other Reasons</th>
+                                    <td colspan="4">@Model.otherReason</td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="panel-footer">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4" style="width:80%">
+            <div class="panel panel-primary">
+                <div class="panel-heading" >
+                    <h4>   <b> Previous Funded Trips</b></h4>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive" style="margin-bottom:-10px">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th><b>Date of Claim</b></th>
+                                    <th>
+                                        <b>£ Received</b>
+                                    </th>
+                                    <th>
+                                        Conference
+
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < @Model.allFundedTrips.Count; i++)
+                                {
+                                    <tr>
+                                        <th>@Model.allFundedTrips[i].dClaim</th>
+                                        <td>@Model.allFundedTrips[i].amountReceived</td>
+                                        <td>@Model.allFundedTrips[i].conferenceName</td>
+                                    </tr>
+                                }
+
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive" style="margin-bottom:-25px">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th><b></b></th>
+                                    <th colspan="4">
+                                        <b>£</b>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Total Funds Claimed</th>
+                                    <td colspan="4">@Model.totalClaimed</td>
+
+                                </tr>
+                                <tr>
+                                    <th>Total Allowance Remained</th>
+                                    <td colspan="4">@Model.totalRemained</td>
+
+                                </tr>
+                                <tr>
+                                    <th>Funds Received in last 12 months</th>
+                                    <td colspan="4">
+                                        @Model.claimed12M
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <th>12 Months Allowance Remaining</th>
+                                    <td colspan="4">@Model.remained12M</td>
+                                </tr>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="panel-footer">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4" style="width:80%">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h4> <b>Detail of the claim</b></h4>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive" style="margin-bottom:-25px">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th><b></b></th>
+                                    <th class="col-lg-2"><b>£</b></th>
+                                    <th>
+                                        <b>Calculation and Justification</b>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Registration Fee</th>
+                                    <td>@Model.regFee</td>
+                                    <td>@Model.regCal</td>
+
+                                </tr>
+                                <tr>
+                                    <th>Trasportation Cost <br /> (Breakdown)</th>
+                                    <td>@Model.transFee</td>
+                                    <td>@Model.transCal</td>
+
+                                </tr>
+                                <tr>
+                                    <th>Accomodation</th>
+                                    <td>@Model.accomFee</td>
+                                    <td>
+                                        @Model.accomCal
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <th>Meal</th>
+                                    <td>@Model.mealFee</td>
+                                    <td>@Model.mealCal</td>
+                                </tr>
+                                <tr>
+                                    <th>Others</th>
+                                    <td>@Model.otherFee</td>
+                                    <td>@Model.otherCal</td>
+                                </tr>
+                                <tr>
+                                    <th>Total</th>
+                                    <td colspan="2">@Model.totalFee</td>
+
+                                </tr>
+                                <tr>
+                                    <th>Max Allowable Claim</th>
+                                    <td colspan="2">@Model.maxAllowed</td>
+
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    Date of Submission: @Model.dOfSubmission
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @if(Model.role == 1 && Model.status == 1)
+    {
+        <div class="row">
+            <div class="col-lg-4" style="width:80%">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h4>  <b>Remarks</b></h4>
+                    </div>
+                    <form role="form" method="post">
+                        <fieldset>
+                            <div class="panel-body">
+
+                                <div class="table-responsive" style="margin-bottom:-25px">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-lg-6"><b>Are you paying for the remainder of<br />student's travel cost</b></th>
+                                                <th>
+                                                    <div class="form-group">
+                                                        <label class="radio-inline">
+
+                                                            <input type="radio" name="optionsRadiosInline" id="payingForStudent1" value="option1" checked>Yes
+                                                        </label>
+                                                        <label class="radio-inline">
+                                                            <input type="radio" name="optionsRadiosInline" id="payingForStudent2" value="option2">No
+                                                        </label>
+                                                    </div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th class="col-lg-6"><b>If so, please state the<br />max amount you will fund</b></th>
+                                                <td>
+                                                    <div class="form-group">
+
+                                                        <input class="form-control" name="maxFundInput" id="maxFundingtbx" placeholder="Enter the maximum amount you will fund">
+                                                    </div>
+
+
+                                                </td>
+
+
+                                            </tr>
+                                            <tr>
+                                                <th class="col-lg-6">Please provide your research account</th>
+                                                <td>
+                                                    <input class="form-control" name="researchAccInput" id="resAccounttbx" placeholder="Enter your research account no">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="col-lg-6">Please provide your comment</th>
+                                                <td>
+                                                    <textarea rows="3" class="form-control" name="commentInput" id="commenttbx" placeholder="Enter your comment here"></textarea>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+
+                            <div class="panel-footer" style="text-align:center">
+                                @if((Model.status == 2 && Model.role == 1)||(Model.status ==3))
+                                { 
+                                <button type="submit" id="btnApprove" disabled="disabled" value="approve" name="operation" class="btn btn-success btn-circle btn-xl" onclick="return confirm('Do you want to approve this application?')">
+                                    <i class="fa fa-check"></i>
+                                </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" id="btnApprove"  value="approve" name="operation" class="btn btn-success btn-circle btn-xl" onclick="return confirm('Do you want to approve this application?')">
+                                        <i class="fa fa-check"></i>
+                                    </button>
+                                }
+                                 
+                                @if ((Model.status == 4))
+                                {
+                                    <button type="submit" id="btnReject" value="reject" disabled="disabled" name="operation" class="btn btn-danger btn-circle btn-xl" style="margin-left:150px;" onclick="return confirm('Do you want to reject this application?')">
+                                        <i class="fa fa-times"></i>
+
+                                    </button>
+                                }
+                                else
+                                {
+                                <button type="submit" id="btnReject" value="reject"  name="operation" class="btn btn-danger btn-circle btn-xl" style="margin-left:150px;" onclick="return confirm('Do you want to reject this application?')">
+                                    <i class="fa fa-times"></i>
+
+                                </button>
+                                }
+                                <button type="button" id="btnMessage" value="message" data-toggle="modal" data-target="#myModal" name="operation" class="btn btn-info btn-circle btn-xl" style="margin-left:150px;">
+                                    <i class="fa fa-mail-reply"></i>
+                                </button>
+                                @if(Model.isThereDocument > 0)
+                                { 
+                                <button type="submit" id="btnDownload" value="download" name="operation" class="btn btn-primary btn-circle btn-xl" onclick="download(@Model.tripID)" style="margin-left:150px;">
+                                    <i class="fa fa-download"></i>
+                                </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" disabled="disabled" id="btnDownload" value="download" name="operation" class="btn btn-primary btn-circle btn-xl" onclick="download(@Model.tripID)" style="margin-left:150px;">
+                                        <i class="fa fa-download"></i>
+                                    </button>
+                                }
+                                <!-- Modal -->
+                                <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                <h4 class="modal-title" id="myModalLabel">Quick Message</h4>
+                                            </div>
+
+                                            <div class="modal-body">
+                                                <div class="form-group">
+                                                    <input class="form-control" placeholder="Give your message a title" name="messageTitle" id="mTitleTbx">
+
+                                                    <br />
+                                                    <textarea rows="6" class="form-control" name="messageBody" id="tbxMBody" placeholder="Enter your message here"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                                <button type="submit" name="operation" value="send" class="btn btn-primary">Send</button>
+                                            </div>
+                                        </div>
+                                        <!-- /.modal-content -->
+                                    </div>
+                                    <!-- /.modal-dialog -->
+                                </div>
+                                <!-- /.modal -->
+                                <!--  <button type="button" class="btn btn-warning btn-circle btn-xl">
+                                    <i class="fa fa-heart"></i>
+                                </button>-->
+
+                            </div>
+
+                            <input name="tripId" hidden="hidden" value=@Model.tripID />
+                            <input name="studentId" hidden="hidden" value="@Model.studentID" />
+                        </fieldset>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    }
+    else if (Model.role == 2 || Model.status != 1)
+    {
+        <div class="row">
+            <div class="col-lg-4" style="width:80%">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <form role="form" method="post">
+                            <table style="width:100%">
+                                <tr>
+                                    <td>
+                                        @if (Model.role == 1)
+                                        {
+                                            <h4>  <b>Remarks</b></h4>
+                                        }
+                                        else
+                                        {
+                                            <h4>  <b>Remarks</b></h4>
+                                        }
+                                    </td>
+
+                                    <td style="text-align:right">
+
+                                        <button type="submit" style="color:white" name="operation" value="reset" class="btn btn-link" onclick="return confirm('Confirm to revert your decision for this application?')">Reset</button>
+                                        <input name="tripId" hidden="hidden" value=@Model.tripID />
+                                    </td>
+                                </tr>
+                            </table>
+                        </form>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive" style="margin-bottom:-25px">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th><b></b></th>
+                                        @if (Model.role == 1)
+                                        {
+                                            <th class="col-lg-6"><b>Your input</b></th>
+                                        }
+                                        else
+                                        {
+                                            <th class="col-lg-6"><b>Supervisor input</b></th>
+                                        }
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        @if (Model.role == 1)
+                                        {
+                                            <th class="col-lg-6">Are you paying for student's extra cost?</th>
+                                        }
+                                        else
+                                        {
+                                            <th class="col-lg-6">Is the supervisor paying for student's extra cost?</th>
+                                        }
+
+                                        <td>@Model.isSupPay</td>
+
+
+                                    </tr>
+                                    <tr>
+                                        @if (Model.role == 1)
+                                        {
+
+                                            <th class="col-lg-6">How much will you pay?</th>
+                                        }
+                                        else
+                                        {
+                                            <th class="col-lg-6">How much will the supervisor pay?</th>
+                                        }
+                                        <td>@Model.supPayAmount</td>
+
+
+                                    </tr>
+                                    @if(!String.IsNullOrEmpty(Model.sComment))
+                                    {
+                                    <tr>
+                                      
+                                        @if (Model.role == 1)
+                                        {
+                                            <th class="col-lg-6">Your comment</th>
+                                        }
+                                        else
+                                        {
+                                            <th class="col-lg-6">Supervisor 's comment</th>
+                                        }
+
+                                        <td>@Model.sComment</td>
+
+                                        
+                                    </tr>
+                                    }
+                                    @if (Model.role == 2 && !String.IsNullOrEmpty(Model.tComment))
+                                  { 
+                                    <tr>
+                                        
+                                            <th class="col-lg-6">Your comment</th>
+                                        
+                                        <td>@Model.tComment</td>
+                                       
+
+
+                                    </tr>
+                                   }
+
+
+                                </tbody>
+                            </table>
+                        </div>
+                        </div>
+                    <div class="panel-footer" style="text-align:center">
+                        <form role="form" method="post">
+                            @if ((Model.status == 2 && Model.role == 1) || (Model.status == 3) ||(Model.role == 2&&Model.status ==1) || (Model.status ==4) || (Model.status ==5))
+                            {
+                                <button type="submit" id="btnApprove" disabled="disabled" value="approve" name="operation" class="btn btn-success btn-circle btn-xl" onclick="return confirm('Do you want to approve this application?')">
+                                    <i class="fa fa-check"></i>
+                                </button>
+                            }
+                            else if ((Model.status == 1 && Model.role == 1) || (Model.status == 2 && Model.role == 2))
+                            {
+                                <button type="submit" id="btnApprove" value="approve" name="operation" data-toggle="modal" data-target="#tutApproveModal" class="btn btn-success btn-circle btn-xl" >
+                                    <i class="fa fa-check"></i>
+                                </button>
+                            }
+
+                            @if ((Model.status == 4) || (Model.status == 5)||(Model.role==2 && Model.status!=2))
+                            {
+                                <button type="submit" id="btnReject" value="reject" disabled="disabled" name="operation" class="btn btn-danger btn-circle btn-xl" style="margin-left:150px;" onclick="return confirm('Do you want to reject this application?')">
+                                    <i class="fa fa-times"></i>
+
+                                </button>
+                            }
+                            else
+                            {
+                              <button type="button" id="btnReject" value="reject" name="operation" data-toggle="modal" data-target="#tutRejectModal" class="btn btn-danger btn-circle btn-xl" style="margin-left:150px;">
+                                    <i class="fa fa-times"></i>
+
+                                </button>
+                            }
+                            <button type="button" id="btnMessage" value="message" data-toggle="modal" data-target="#myModal" name="operation" class="btn btn-info btn-circle btn-xl" style="margin-left:150px;">
+                                <i class="fa fa-mail-reply"></i>
+                            </button>
+                            @if (Model.isThereDocument > 0)
+                            {
+                                <button type="submit" id="btnDownload" value="download" name="operation" class="btn btn-primary btn-circle btn-xl" onclick="download(@Model.tripID)" style="margin-left:150px;">
+                                    <i class="fa fa-download"></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" disabled="disabled" id="btnDownload" value="download" name="operation" class="btn btn-primary btn-circle btn-xl" onclick="download(@Model.tripID)" style="margin-left:150px;">
+                                    <i class="fa fa-download"></i>
+                                </button>
+                            }
+                            <!-- Modal -->
+                            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                            <h4 class="modal-title" id="myModalLabel">Quick Message</h4>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <div class="form-group">
+                                                <input class="form-control" placeholder="Give your message a title" name="messageTitle" id="mTitleTbx">
+
+                                                <br />
+                                                <textarea rows="6" class="form-control" name="messageBody" id="tbxMBody" placeholder="Enter your message here"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                            <button type="submit" name="operation" value="send" class="btn btn-primary">Send</button>
+                                        </div>
+                                    </div>
+                                    <!-- /.modal-content -->
+                                </div>
+                                <!-- /.modal-dialog -->
+                            </div>
+                            <!-- /.modal -->
+
+                            <div class="modal fade" id="tutRejectModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                            <h4 class="modal-title" id="myModalLabel">Are you sure to reject this application?</h4>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <div class="form-group">
+                                                
+                                                <textarea rows="4" class="form-control" name="commentInput" id="tbxMBody" placeholder="Enter your comment here"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                            <button type="submit" name="operation" value="reject" class="btn btn-primary">send</button>
+                                        </div>
+                                    </div>
+                                    <!-- /.modal-content -->
+                                </div>
+                                <!-- /.modal-dialog -->
+                            </div>
+                            <!-- /.modal -->
+
+                            <div class="modal fade" id="tutApproveModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                            <h4 class="modal-title" id="myModalLabel">Are you sure to approve this application?</h4>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <div class="form-group">
+
+                                                <textarea rows="4" class="form-control" name="commentInput" id="tbxMBody" placeholder="Enter your comment here"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                            <button type="submit" name="operation" value="approve" class="btn btn-primary">Approve</button>
+                                        </div>
+                                    </div>
+                                    <!-- /.modal-content -->
+                                </div>
+                                <!-- /.modal-dialog -->
+                            </div>
+                            <!--  <button type="button" class="btn btn-warning btn-circle btn-xl">
+            <i class="fa fa-heart"></i>
+        </button>--><input name="tripId" hidden="hidden" value=@Model.tripID />
+                    <input name="studentId" hidden="hidden" value="@Model.studentID" />
+                    <input name="studentname" hidden="hidden" value="@Model.studentName" />
+                            <input name="studentEmail" hidden="hidden" value="@Model.studentEmail" />
+                            </form>
+
+</div>
+
+                   
+
+
+
+
+
+                        
+                    </div>
+                </div>
+            </div>
+    }
+
+
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                    </div>
+
+
+<script>
+    function download(tripid) {
+
+       
+            $.ajax({
+                url: '/Home/Download',
+                type: 'POST',
+                contentType: 'application/json;',
+                data: JSON.stringify({ tripid: tripid }),
+                success: function (valid) {
+                    if (valid) {
+
+                    } else {
+
+                    }
+                }
+            });
+            
+        }
+
+
+    
+</script>
+
+                <script>
+                    function updateSeen(id, messageid) {
+
+                        var ele = document.getElementById(messageid);
+                        var status = ele.innerHTML.substring(1, 5);
+                        if (status == 'Seen') {
+
+                        }
+                        else {
+                            $.ajax({
+                                url: '/Home/UpdateSeen',
+                                type: 'POST',
+                                contentType: 'application/json;',
+                                data: JSON.stringify({ id: id }),
+                                success: function (valid) {
+                                    if (valid) {
+
+                                    } else {
+
+                                    }
+                                }
+                            });
+                            ele.innerHTML = '(Seen) ' + ele.innerHTML.substring(6);
+                        }
+
+
+                    }
+                </script>
+                <!-- /.container-fluid -->
