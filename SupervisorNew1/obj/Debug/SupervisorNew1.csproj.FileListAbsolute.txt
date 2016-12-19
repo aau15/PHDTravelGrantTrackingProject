@@ -25,3 +25,6 @@ c:\users\larrylaptop\documents\visual studio 2013\Projects\SupervisorNew1\Superv
 c:\users\larrylaptop\documents\visual studio 2013\Projects\SupervisorNew1\SupervisorNew1\obj\Debug\sb-admin-2.Web.dll
 c:\users\larrylaptop\documents\visual studio 2013\Projects\SupervisorNew1\SupervisorNew1\obj\Debug\sb-admin-2.Web.pdb
 c:\users\larrylaptop\documents\visual studio 2013\Projects\SupervisorNew1\SupervisorNew1\bin\MySql.Data.dll
+C:\Users\larrylaptop\documents\visual studio 2013\Projects\SupervisorNew1\SupervisorNew1\bin\Zayko.Finance.CurrencyConverter.dll
+C:\Users\larrylaptop\documents\visual studio 2013\Projects\SupervisorNew1\SupervisorNew1\bin\Zayko.Finance.CurrencyConverter.pdb
+C:\Users\larrylaptop\documents\visual studio 2013\Projects\SupervisorNew1\SupervisorNew1\bin\Zayko.Finance.CurrencyConverter.xml

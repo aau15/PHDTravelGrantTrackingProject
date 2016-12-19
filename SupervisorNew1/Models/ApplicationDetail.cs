@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
+
 namespace SupervisorNew1.Models
 {
     public class ApplicationDetail
@@ -53,6 +54,8 @@ namespace SupervisorNew1.Models
         public int messageCount { get; set; }
         public string researchAcc { get; set; }
         public string studentEmail { get; set; }
+        public int isThereTravelReport { get; set; }
+        public string currency { get; set; }
     }
     public class Message
     {
@@ -75,13 +78,54 @@ namespace SupervisorNew1.Models
 
     public class FundsUsedPYearList
     {
+        
+        public int studentCount { get; set; }
+        public int role { get; set; }
         public List<FundsUsedPerYear> fundsUsedPerYearList {get;set;}
+        public List<FundsUsedPerStudent> fundsUsedPerStudentList { get; set; }
+        public List<FundsUsedPerSup> fundsUsedPerSupList { get; set; }
+        public List<studentMonthlyList> fundsUsedPerStudentPerMonthList { get; set; }
+        public string newAppSize { get; set; }
+        public string newMsgSize { get; set; }
     }
 
+
+    
+
+    public class FundsUsedPerStudent
+    {
+        public string studentName { get; set; }
+        public int totalFundsUsed { get; set; }
+
+
+
+    }
+
+    public class FundsUsedPerSup
+    {
+        public string supervisorName { get; set; }
+        public int totalFundsUsed { get; set; }
+    }
 
     public class FundsUsedPerYear
     {
         public string year { get; set; }
+        public int totalFundsUsed { get; set; }
+    }
+
+    public class studentMonthlyList
+    {
+   //     public string id {get;set;}
+        public string name { get; set; }
+        public List<FundsUsedPerStudentMonth> fStudentMonthlyList { get; set; }
+    }
+
+
+
+
+    public class FundsUsedPerStudentMonth
+    {
+        public string month { get; set; }
         public int totalFundsUsed { get; set; }
     }
 }

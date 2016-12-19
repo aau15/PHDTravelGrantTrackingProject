@@ -31,7 +31,7 @@
 
                         <td>
                             <form method="post">
-                                <button type="submit" value="dispatchFund" name="operation" class="btn btn-outline btn-primary" onclick="return confirm('Confirm payment of funds to student?')">Confirm Payment</button>
+                                <button style="margin-right:20px" type="submit" value="dispatchFund" name="operation" class="btn btn-outline btn-primary" onclick="return confirm('Confirm payment of funds to student?')">Confirm Payment</button>
                                 <input name="tripId" hidden="hidden" value=@Model.tripID />
                             </form>
 
@@ -41,7 +41,18 @@
                     else if (Model.status == 3 && Model.role == 2 && Model.isFundDispatched == 1)
                     {
                         <td>
-                            <div>Funds Dispatched</div>
+                            <div style="margin-right:20px">Funds Dispatched</div>
+
+                        </td>
+                    }
+
+                    @if (Model.isThereTravelReport != 0)
+                    {
+                        <td>
+                            <form method="post">
+                                <button style="margin-right:20px" type="submit" value="travelReport" name="operation" class="btn btn-outline btn-primary">Travel Report</button>
+                                <input name="tripId" hidden="hidden" value=@Model.tripID />
+                            </form>
 
                         </td>
                     }
@@ -50,11 +61,11 @@
                     <td>
                         @if (Model.messageCount > 1)
                         {
-                            <button type="button" class="btn btn-outline btn-primary" data-toggle="dropdown" style="margin-left:-20%" href="#">@Model.messageCount Messages</button>
+                            <button type="button" class="btn btn-outline btn-primary" data-toggle="dropdown" href="#">@Model.messageCount Messages</button>
                         }
                         else
                         {
-                            <button type="button" class="btn btn-outline btn-primary" data-toggle="dropdown" style="margin-left:-20%" href="#">@Model.messageCount Message</button>
+                            <button type="button" class="btn btn-outline btn-primary" data-toggle="dropdown"  href="#">@Model.messageCount Message</button>
                         }
                         
                         <ul class="dropdown-menu dropdown-messages" style="left:30%;right:5%; word-break: break-all; ">
@@ -64,10 +75,12 @@
                                     <div class="panel-heading">
                                       
                                         <i class="fa fa-envelope-o"></i> All Messages 
+                                        @if(Model.role !=3)
+                                        { 
                                         <button type="button" id="btnMessage" value="message" data-toggle="modal" data-target="#myModal" name="operation" class="btn-link" style="float:right;" >
                                             <i class="fa fa-mail-reply"></i>
                                         </button>
-                                        
+                                        }
 
                                     </div>
                                     <!-- /.panel-heading -->
@@ -302,10 +315,9 @@
     <div>
         <p style="color:red">@ViewBag.message</p>
     </div>
-     
     <br />
     <div class="row">
-        <div class="col-lg-4" style="width:80%">
+        <div class="col-lg-4" style="width:45%">
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h4><b>Detail of Student</b></h4>
@@ -315,8 +327,8 @@
                         <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
-                                    <th class="col-lg-6"><b></b></th>
-                                    <th colspan="4">
+                                    <th class="col-lg-3"><b></b></th>
+                                    <th class="col-lg-3">
                                         <b>Student Inputs</b>
                                     </th>
                                     <!--
@@ -338,33 +350,33 @@
                             <tbody>
                                 <tr>
                                     <th>Student Name</th>
-                                    <td colspan="4">@Model.studentName</td>
+                                    <td >@Model.studentName</td>
 
                                 </tr>
                                 <tr>
                                     <th>Email</th>
-                                    <td colspan="4">@Model.email</td>
+                                    <td >@Model.email</td>
 
                                 </tr>
                                 <tr>
-                                    <th>Date of 1st Registration</th>
-                                    <td colspan="4">
+                                    <th>Date of Registration</th>
+                                    <td >
                                         @Model.d1stReg
                                     </td>
 
                                 </tr>
                                 <tr>
                                     <th>Months Completed</th>
-                                    <td colspan="4">@Model.monthsComp</td>
+                                    <td >@Model.monthsComp</td>
                                 </tr>
                                 <tr>
-                                    <th>Fee paid By<br />(e.g DTA, project(name), Supervisor, Self)</th>
-                                    <td colspan="4">@Model.feePayer</td>
+                                    <th>Fee paid By</th>
+                                    <td >@Model.feePayer</td>
 
                                 </tr>
                                 <tr>
                                     <th>Fee last paid</th>
-                                    <td colspan="4">@Model.feeLPaid</td>
+                                    <td >@Model.feeLPaid</td>
                                 </tr>
 
                             </tbody>
@@ -380,9 +392,103 @@
                 </div>
             </div>
         </div>
-    </div>
+        <div class="col-lg-4" style="width:45%">
+            <div class="panel panel-primary" style="max-height:369px">
+                <div class="panel-heading">
+                    <h4>   <b> Previous Funded Trips</b></h4>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive" style="margin-bottom:-10px;height:100px">
+                        <table class="table table-bordered table-striped" >
+                            <thead>
+                                <tr>
+                                    <th><b>Date</b></th>
+
+                                   
+                                        
+                                    
+                                    <th>
+                                        <b>£ Received</b>
+                                    </th>
+                                    
+                                   
+                                   
+                                    
+                                    <th>
+                                        Activity
+
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < @Model.allFundedTrips.Count; i++)
+                                {
+                                   
+                                        <tr>
+                                            <th>@Model.allFundedTrips[i].dClaim</th>
+                                            <td>@Model.allFundedTrips[i].amountReceived</td>
+                                            <td>@Model.allFundedTrips[i].conferenceName</td>
+                                        </tr>
+                                   
+                                }
+
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive" style="margin-bottom:-25px;margin-top:22px">
+                        <table class="table table-bordered table-striped">
+                          
+                            <tbody>
+                                <tr>
+                                    <th>Total Claimed</th>
+                                  
+                                     <td colspan="4">£@Model.totalClaimed</td>
+                                   
+                                    
+
+                                </tr>
+                                <tr>
+                                    <th>Total Remained</th>
+                                  
+                                        <td colspan="4">£@Model.totalRemained</td>
+                                   
+
+                                </tr>
+                                <tr>
+                                    <th>Claimed in last 12 months</th>
+                                  
+                                    <td colspan="4">
+                                        £@Model.claimed12M               
+                                    </td>
+                                    
+                                    
+
+                                </tr>
+                                <tr>
+                                    <th>Remained in last 12 months</th>
+                                  
+                                        <td colspan="4">
+                                            £@Model.remained12M
+                                        </td>
+                                    
+                                   
+                                </tr>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="panel-footer">
+
+                </div>
+            </div>
+        </div>
+     </div>
     <div class="row">
-        <div class="col-lg-4" style="width:80%">
+        <div class="col-lg-4" style="width:90%">
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h4>  <b> Detail of Trip</b></h4>
@@ -399,6 +505,8 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @if(String.IsNullOrEmpty(Model.otherReason) ||String.IsNullOrWhiteSpace(Model.otherReason))
+                                { 
                                 <tr>
                                     <th>Name of Conference/Workshop</th>
                                     <td colspan="4">@Model.conferenceName</td>
@@ -425,91 +533,14 @@
                                     <td colspan="4">@Model.author</td>
 
                                 </tr>
+                                }
+                                else { 
                                 <tr>
-                                    <th>Other Reasons</th>
+                                    <th>Reason</th>
                                     <td colspan="4">@Model.otherReason</td>
                                 </tr>
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="panel-footer">
-
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-lg-4" style="width:80%">
-            <div class="panel panel-primary">
-                <div class="panel-heading" >
-                    <h4>   <b> Previous Funded Trips</b></h4>
-                </div>
-                <div class="panel-body">
-                    <div class="table-responsive" style="margin-bottom:-10px">
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th><b>Date of Claim</b></th>
-                                    <th>
-                                        <b>£ Received</b>
-                                    </th>
-                                    <th>
-                                        Conference
-
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for (int i = 0; i < @Model.allFundedTrips.Count; i++)
-                                {
-                                    <tr>
-                                        <th>@Model.allFundedTrips[i].dClaim</th>
-                                        <td>@Model.allFundedTrips[i].amountReceived</td>
-                                        <td>@Model.allFundedTrips[i].conferenceName</td>
-                                    </tr>
                                 }
 
-
-
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-responsive" style="margin-bottom:-25px">
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th><b></b></th>
-                                    <th colspan="4">
-                                        <b>£</b>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <th>Total Funds Claimed</th>
-                                    <td colspan="4">@Model.totalClaimed</td>
-
-                                </tr>
-                                <tr>
-                                    <th>Total Allowance Remained</th>
-                                    <td colspan="4">@Model.totalRemained</td>
-
-                                </tr>
-                                <tr>
-                                    <th>Funds Received in last 12 months</th>
-                                    <td colspan="4">
-                                        @Model.claimed12M
-                                    </td>
-
-                                </tr>
-                                <tr>
-                                    <th>12 Months Allowance Remaining</th>
-                                    <td colspan="4">@Model.remained12M</td>
-                                </tr>
-
-
                             </tbody>
                         </table>
                     </div>
@@ -521,7 +552,10 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-lg-4" style="width:80%">
+       
+    </div>
+    <div class="row">
+        <div class="col-lg-4" style="width:90%">
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h4> <b>Detail of the claim</b></h4>
@@ -595,7 +629,7 @@
     @if(Model.role == 1 && Model.status == 1)
     {
         <div class="row">
-            <div class="col-lg-4" style="width:80%">
+            <div class="col-lg-4" style="width:90%">
                 <div class="panel panel-primary">
                     <div class="panel-heading">
                         <h4>  <b>Remarks</b></h4>
@@ -645,7 +679,7 @@
                                             <tr>
                                                 <th class="col-lg-6">Please provide your comment</th>
                                                 <td>
-                                                    <textarea rows="3" class="form-control" name="commentInput" id="commenttbx" placeholder="Enter your comment here"></textarea>
+                                                    <textarea maxlength="100" rows="3" class="form-control" name="commentInput" id="commenttbx" placeholder="Enter your comment here"></textarea>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -668,7 +702,7 @@
                                     </button>
                                 }
                                  
-                                @if ((Model.status == 4))
+                                @if ((Model.status!=1))
                                 {
                                     <button type="submit" id="btnReject" value="reject" disabled="disabled" name="operation" class="btn btn-danger btn-circle btn-xl" style="margin-left:150px;" onclick="return confirm('Do you want to reject this application?')">
                                         <i class="fa fa-times"></i>
@@ -711,7 +745,7 @@
                                                     <input class="form-control" placeholder="Give your message a title" name="messageTitle" id="mTitleTbx">
 
                                                     <br />
-                                                    <textarea rows="6" class="form-control" name="messageBody" id="tbxMBody" placeholder="Enter your message here"></textarea>
+                                                    <textarea rows="6" maxlength="200" class="form-control" name="messageBody" id="tbxMBody" placeholder="Enter your message here"></textarea>
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
@@ -732,6 +766,8 @@
 
                             <input name="tripId" hidden="hidden" value=@Model.tripID />
                             <input name="studentId" hidden="hidden" value="@Model.studentID" />
+                            <input name="studentname" hidden="hidden" value="@Model.studentName" />
+                            <input name="studentEmail" hidden="hidden" value="@Model.studentEmail" />
                         </fieldset>
                     </form>
 
@@ -739,10 +775,10 @@
             </div>
         </div>
     }
-    else if (Model.role == 2 || Model.status != 1)
+    else if (Model.role == 2 ||Model.role ==3 || Model.status != 1)
     {
         <div class="row">
-            <div class="col-lg-4" style="width:80%">
+            <div class="col-lg-4" style="width:90%">
                 <div class="panel panel-primary">
                     <div class="panel-heading">
                         <form role="form" method="post">
@@ -760,9 +796,17 @@
                                     </td>
 
                                     <td style="text-align:right">
-
-                                        <button type="submit" style="color:white" name="operation" value="reset" class="btn btn-link" onclick="return confirm('Confirm to revert your decision for this application?')">Reset</button>
+                                        @if(((Model.status == 5 || Model.status == 3) && Model.role == 2)||((Model.status ==4 || Model.status == 2)&&Model.role==1))
+                                        {
+                                            if(Model.isFundDispatched == 0)
+                                            { 
+                                            <button type="submit" style="color:white" name="operation" value="reset" class="btn btn-link" onclick="return confirm('Confirm to revert your decision for this application?')">Reset</button>
+                                        }
+                                        }
                                         <input name="tripId" hidden="hidden" value=@Model.tripID />
+                                        <input name="studentId" hidden="hidden" value="@Model.studentID" />
+                                        <input name="studentname" hidden="hidden" value="@Model.studentName" />
+                                        <input name="studentEmail" hidden="hidden" value="@Model.studentEmail" />
                                     </td>
                                 </tr>
                             </table>
@@ -814,7 +858,7 @@
 
 
                                     </tr>
-                                    @if(!String.IsNullOrEmpty(Model.sComment))
+                                    @if(!String.IsNullOrEmpty(Model.sComment) ||!String.IsNullOrWhiteSpace(Model.sComment))
                                     {
                                     <tr>
                                       
@@ -832,7 +876,7 @@
                                         
                                     </tr>
                                     }
-                                    @if (Model.role == 2 && !String.IsNullOrEmpty(Model.tComment))
+                                    @if (Model.role == 2 && (!String.IsNullOrEmpty(Model.tComment)||!String.IsNullOrWhiteSpace(Model.tComment)))
                                   { 
                                     <tr>
                                         
@@ -852,7 +896,7 @@
                         </div>
                     <div class="panel-footer" style="text-align:center">
                         <form role="form" method="post">
-                            @if ((Model.status == 2 && Model.role == 1) || (Model.status == 3) ||(Model.role == 2&&Model.status ==1) || (Model.status ==4) || (Model.status ==5))
+                            @if ((Model.status == 2 && Model.role == 1) || Model.role ==3|| (Model.status == 3) ||(Model.role == 2&&Model.status ==1) || (Model.status ==4) || (Model.status ==5))
                             {
                                 <button type="submit" id="btnApprove" disabled="disabled" value="approve" name="operation" class="btn btn-success btn-circle btn-xl" onclick="return confirm('Do you want to approve this application?')">
                                     <i class="fa fa-check"></i>
@@ -860,12 +904,12 @@
                             }
                             else if ((Model.status == 1 && Model.role == 1) || (Model.status == 2 && Model.role == 2))
                             {
-                                <button type="submit" id="btnApprove" value="approve" name="operation" data-toggle="modal" data-target="#tutApproveModal" class="btn btn-success btn-circle btn-xl" >
+                                <button type="button" id="btnApprove" value="approve" name="operation" data-toggle="modal" data-target="#tutApproveModal" class="btn btn-success btn-circle btn-xl" >
                                     <i class="fa fa-check"></i>
                                 </button>
                             }
 
-                            @if ((Model.status == 4) || (Model.status == 5)||(Model.role==2 && Model.status!=2))
+                            @if ((Model.status == 4) || (Model.status == 5)||Model.role==3||(Model.role==2 && Model.status!=2) || (Model.role==1&&Model.status!=1))
                             {
                                 <button type="submit" id="btnReject" value="reject" disabled="disabled" name="operation" class="btn btn-danger btn-circle btn-xl" style="margin-left:150px;" onclick="return confirm('Do you want to reject this application?')">
                                     <i class="fa fa-times"></i>
@@ -879,9 +923,18 @@
 
                                 </button>
                             }
-                            <button type="button" id="btnMessage" value="message" data-toggle="modal" data-target="#myModal" name="operation" class="btn btn-info btn-circle btn-xl" style="margin-left:150px;">
-                                <i class="fa fa-mail-reply"></i>
-                            </button>
+                            @if (Model.role == 3)
+                            {
+                                <button type="button" id="btnMessage" disabled="disabled" value="message" data-toggle="modal" data-target="#myModal" name="operation" class="btn btn-info btn-circle btn-xl" style="margin-left:150px;">
+                                    <i class="fa fa-mail-reply"></i>
+                                </button>
+                            }
+                            else
+                            { 
+                                <button type="button" id="btnMessage" value="message" data-toggle="modal" data-target="#myModal" name="operation" class="btn btn-info btn-circle btn-xl" style="margin-left:150px;">
+                                    <i class="fa fa-mail-reply"></i>
+                                </button>
+                            }
                             @if (Model.isThereDocument > 0)
                             {
                                 <button type="submit" id="btnDownload" value="download" name="operation" class="btn btn-primary btn-circle btn-xl" onclick="download(@Model.tripID)" style="margin-left:150px;">
@@ -908,7 +961,7 @@
                                                 <input class="form-control" placeholder="Give your message a title" name="messageTitle" id="mTitleTbx">
 
                                                 <br />
-                                                <textarea rows="6" class="form-control" name="messageBody" id="tbxMBody" placeholder="Enter your message here"></textarea>
+                                                <textarea rows="6" maxlength="200" class="form-control" name="messageBody" id="tbxMBody" placeholder="Enter your message here"></textarea>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
@@ -933,7 +986,7 @@
                                         <div class="modal-body">
                                             <div class="form-group">
                                                 
-                                                <textarea rows="4" class="form-control" name="commentInput" id="tbxMBody" placeholder="Enter your comment here"></textarea>
+                                                <textarea rows="4" maxlength="100" class="form-control" name="commentInput" id="tbxMBody" placeholder="Enter your comment here"></textarea>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
@@ -958,7 +1011,7 @@
                                         <div class="modal-body">
                                             <div class="form-group">
 
-                                                <textarea rows="4" class="form-control" name="commentInput" id="tbxMBody" placeholder="Enter your comment here"></textarea>
+                                                <textarea rows="4" maxlength="100" class="form-control" name="commentInput" id="tbxMBody" placeholder="Enter your comment here"></textarea>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
@@ -1052,4 +1105,60 @@
 
                     }
                 </script>
+
+<script type="text/javascript">
+    var idleTime = 0;
+    $(document).ready(function () {
+        //Increment the idle time counter every minute.
+        var tripid = @(Html.Raw(Json.Encode(Model.tripID))); 
+        var isActive = 0
+        var idleInterval = setInterval(timerIncrement(tripid), 2000); // 5 minute
+       
+       // alert("test start");
+        //Zero the idle timer on mouse movement.
+     /*   $(this).mousemove(function (e) {
+            isActive = 1;
+            idleTime = 0;
+        });
+        $(this).keypress(function (e) {
+            isActive = 1;
+            idleTime = 0;
+        });
+        */
+    });
+
+    function timerIncrement(tripid) {
+        var dialog = $(foo).dialog('open');
+        setTimeout(function() { dialog.dialog('close'); }, time);
+
+      /* idleTime ++;
+        if (idleTime > 4) { // 5 minutes
+            $.ajax({
+                url: '/Home/UpdateSeen',
+                type: 'POST',
+                contentType: 'application/json;',
+                data: JSON.stringify({ id: id }),
+                success: function (valid) {
+                    if (valid) {
+
+                    } else {
+
+                    }
+                }
+            });
+        }*/
+
+
+
+
+
+
+
+    }
+
+    function increaseTime()
+    {
+
+    }
+</script>   
                 <!-- /.container-fluid -->

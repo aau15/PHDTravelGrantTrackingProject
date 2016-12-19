@@ -22,6 +22,6 @@ namespace SupervisorNew1.Models
         public string endDate;
         public string cost;
         public string status;
-
+        public string currency;
     }
 }
