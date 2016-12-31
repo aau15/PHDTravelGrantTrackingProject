@@ -10,6 +10,9 @@ using System.IO;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using System.Globalization;
+using ICSharpCode;
+using Excel;
+
 
 namespace SupervisorNew1.Controllers
 {
@@ -44,16 +47,20 @@ namespace SupervisorNew1.Controllers
             }
             else if (lg.role ==3)
             {
-                sql = "select supervisor.name as supname, student.supervisorid, student.name, student.studentid, traveldate, month(traveldate) as mon,year(traveldate) as y, amountreceived from trip join student on trip.studentid = student.studentid join supervisor on student.supervisorid = supervisor.supervisorid where isfunddispatched = 1 AND student.tutorid = 't1234' order by traveldate asc;";
+                sql = "select supervisor.name as supname, student.supervisorid, student.name, student.studentid, traveldate, month(traveldate) as mon,year(traveldate) as y, amountreceived from trip join student on trip.studentid = student.studentid join supervisor on student.supervisorid = supervisor.supervisorid where isfunddispatched = 1 order by traveldate asc;";
             }
             
-            if(lg.role == 1 || lg.role == 3)
+            if(lg.role == 1 )
             {
-                sqlAppSize = "select count(tripid) as size from trip join student on trip.studentid = student.studentid where status = 1;";
+                sqlAppSize = "select count(tripid) as size from trip join student on trip.studentid = student.studentid where status = 1 and supervisorid  ='" + lg.username + "' ;";
             }
             else if(lg.role == 2)
             {
-                sqlAppSize = "select count(tripid) as size from trip join student on trip.studentid = student.studentid where status = 2;";
+                sqlAppSize = "select count(tripid) as size from trip join student on trip.studentid = student.studentid where status = 2 and tutorid = '" + lg.username + "';";
+            }
+            else if(lg.role == 3)
+            {
+                sqlAppSize = "select count(tripid) as size from trip join student on trip.studentid = student.studentid where status = 1 ";
             }
           
 
@@ -80,9 +87,16 @@ namespace SupervisorNew1.Controllers
                 
                 double totalFundsUsed = 0.0;
                 FundsUsedPYearList flist = new FundsUsedPYearList();
-                flist.role = lg.role;
+                flist.role = lg.role;            
                 flist.newAppSize = Convert.ToString(db.RunProcReturn(sqlAppSize, "table").Tables[0].Rows[0]["size"]);
-                flist.newMsgSize = Convert.ToString(db.RunProcReturn(sqlNewMsg, "table").Tables[0].Rows[0]["size"]);
+                try
+                {
+                    flist.newMsgSize = Convert.ToString(db.RunProcReturn(sqlNewMsg, "table").Tables[0].Rows[0]["size"]);
+                }
+                catch(Exception)
+                {
+                    flist.newMsgSize = "0";
+                }
                 flist.fundsUsedPerYearList = new List<FundsUsedPerYear>();
               
                 for (int i = 0; i < dt.Rows.Count;)
@@ -261,7 +275,7 @@ namespace SupervisorNew1.Controllers
 
                     ///////////////////// graph by supervisor//////////////////////////////
                     flist.fundsUsedPerSupList = new List<FundsUsedPerSup>();
-                if(lg.role == 2)
+                if(lg.role == 2 || lg.role == 3)
                 {
                 dv.Sort = "supervisorid asc";
                 sortedDT = dv.ToTable();
@@ -438,8 +452,8 @@ namespace SupervisorNew1.Controllers
             }
             else if (lg.role == 2 || lg.role == 3)
             {
-                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip"
-                     + " from student join trip on student.studentid = trip.studentid"
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip"
+                     + " from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid"
                      + " where tripid in (select tripid from message where seenbytut = 0 and tutorid = '" + currentUserName + "');";
             }
             DataTable dt = data.RunProcReturn(sql, "table").Tables[0]; //get the needed info related to current user
@@ -463,7 +477,7 @@ namespace SupervisorNew1.Controllers
                 ap.endDate = Convert.ToDateTime(dt.Rows[i]["enddate"]).ToString("MM/dd/yyyy");
                 aps.previewList.Add(ap);
             }
-            aps.operation = 2;
+            aps.operation = 6;
             // data.Close();
             // string studentName = dt.Rows[0]["name"].ToString();
             return View("Tables", aps);
@@ -566,7 +580,7 @@ namespace SupervisorNew1.Controllers
 
             // data.Close();
             // string studentName = dt.Rows[0]["name"].ToString();
-            aps.operation = 2;
+            aps.operation = 3;
             return View("Tables", aps);
 
 
@@ -620,7 +634,7 @@ namespace SupervisorNew1.Controllers
 
             // data.Close();
             // string studentName = dt.Rows[0]["name"].ToString();
-            aps.operation = 2;
+            aps.operation = 4;
             return View("Tables", aps);
 
         }
@@ -672,7 +686,7 @@ namespace SupervisorNew1.Controllers
 
             // data.Close();
             // string studentName = dt.Rows[0]["name"].ToString();
-            aps.operation = 2;
+            aps.operation = 5;
             return View("Tables", aps);
         }
 
@@ -745,12 +759,45 @@ namespace SupervisorNew1.Controllers
             }
             return View("Grid");
         }
+
         [HttpPost]
         public ActionResult UpdateSeen(string id)
         {
-            string sql = "update message set seenbysup = 1 where messageid =" + id + ";";
-            DataBase data = new DataBase();
-            data.RunProc(sql);
+            
+            if (Session["ApplicationDetail"] != null)
+            {
+             
+                
+                ApplicationDetail ad = (ApplicationDetail)Session["ApplicationDetail"];
+                if (ad.isThereNewMsg == 1)
+                {
+                    if (ad.role == 1 || ad.role == 2)
+                    {
+
+                        string sql = "";
+                        if (ad.role == 1)
+                        {
+                            sql = "update message set seenbysup = 1 where tripid =" + id + ";";
+                        }
+                        else if (ad.role == 2)
+                        {
+                            sql = "update message set seenbytut = 1 where tripid =" + id + ";";
+                        }
+                        
+                        DataBase data = new DataBase();
+                        try
+                        {
+                            data.RunProc(sql);
+                        }
+                        catch(Exception)
+                        {
+                            return null;
+                        }
+                        ad.isThereNewMsg = 0;
+                        Session["ApplicationDetail"] = ad;
+                    }
+                }
+            }
             return null;
         }
 
@@ -854,6 +901,7 @@ namespace SupervisorNew1.Controllers
                   
                
                 ad.messageList = new List<Message>();
+                ad.isThereNewMsg = 0;
                 for (int i = 0; i < dtMessage.Rows.Count; i++)
                 {
                     Message m = new Message();
@@ -874,13 +922,29 @@ namespace SupervisorNew1.Controllers
                         m.isYours = 1;
                     }
 
-                    if (Convert.ToInt32(dtMessage.Rows[i]["seenbysup"]) == 0)
+                    if (lg.role == 1)
                     {
-                        m.seenStatus = "New";
+                        if (Convert.ToInt32(dtMessage.Rows[i]["seenbysup"]) == 0)
+                        {
+                            m.seenStatus = "New";
+                            ad.isThereNewMsg = 1;
+                        }
+                        else
+                        {
+                            m.seenStatus = "Seen";
+                        }
                     }
-                    else
+                    else if(lg.role == 2)
                     {
-                        m.seenStatus = "Seen";
+                        if (Convert.ToInt32(dtMessage.Rows[i]["seenbytut"]) == 0)
+                        {
+                            m.seenStatus = "New";
+                            ad.isThereNewMsg = 1;
+                        }
+                        else
+                        {
+                            m.seenStatus = "Seen";
+                        }
                     }
                     ad.messageList.Add(m);
                     ad.messageCount++;
@@ -1355,7 +1419,7 @@ namespace SupervisorNew1.Controllers
                     }
                     else if (istutor == 1)
                     {
-                         lg = new LoginData(username, 2, name); //supervisor == 2
+                         lg = new LoginData(username, 2, name); //tutor == 2
                       
                     }
                     else if (istutor == 2)
@@ -1617,6 +1681,209 @@ namespace SupervisorNew1.Controllers
                 return -1;
             }
             return 0;
+        }
+
+
+        public ActionResult UploadStudent()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult UploadStudent(HttpPostedFileBase upload)
+        {
+            if (ModelState.IsValid)
+            {
+
+                if (upload != null && upload.ContentLength > 0)
+                {
+                    // ExcelDataReader works with the binary Excel file, so it needs a FileStream
+                    // to get started. This is how we avoid dependencies on ACE or Interop:
+                    Stream stream = upload.InputStream;
+
+                    // We return the interface, so that
+                    IExcelDataReader reader = null;
+
+
+                    if (upload.FileName.EndsWith(".xls"))
+                    {
+                        reader = ExcelReaderFactory.CreateBinaryReader(stream);
+                    }
+                    else if (upload.FileName.EndsWith(".xlsx"))
+                    {
+                        reader = ExcelReaderFactory.CreateOpenXmlReader(stream);
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("File", "This file format is not supported");
+                        return View();
+                    }
+
+                    reader.IsFirstRowAsColumnNames = true;
+
+                    DataSet result = reader.AsDataSet();
+                    
+                    reader.Close();
+
+                    return View(result.Tables[0]);
+                }
+                else
+                {
+                    ModelState.AddModelError("File", "Please Upload Your file");
+                }
+            }
+            return View();
+        }
+
+        public ActionResult UploadStaff()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult UploadStaff(HttpPostedFileBase upload)
+        {
+            if (ModelState.IsValid)
+            {
+
+                if (upload != null && upload.ContentLength > 0)
+                {
+                    // ExcelDataReader works with the binary Excel file, so it needs a FileStream
+                    // to get started. This is how we avoid dependencies on ACE or Interop:
+                    Stream stream = upload.InputStream;
+
+                    // We return the interface, so that
+                    IExcelDataReader reader = null;
+
+
+                    if (upload.FileName.EndsWith(".xls"))
+                    {
+                        reader = ExcelReaderFactory.CreateBinaryReader(stream);
+                    }
+                    else if (upload.FileName.EndsWith(".xlsx"))
+                    {
+                        reader = ExcelReaderFactory.CreateOpenXmlReader(stream);
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("File", "This file format is not supported");
+                        return View();
+                    }
+
+                    reader.IsFirstRowAsColumnNames = true;
+
+                    DataSet result = reader.AsDataSet();
+                    reader.Close();
+                    string id = "userid";
+                    string name = "name";
+                    string pwd = "password";
+                    
+
+                    DataTable dt = result.Tables[0];
+                    dt.CaseSensitive = false;
+                    if(!dt.Columns.Contains(id) || !dt.Columns.Contains(name)||!dt.Columns.Contains(pwd))
+                    {
+                        return RedirectToAction("Index");
+                    }
+                    int status = writeToDBTableSup(dt);
+                    if(status != 0)
+                    {
+                        return RedirectToAction("Index");
+
+                    }
+                   
+                    return View(result.Tables[0]);
+                }
+                else
+                {
+                    ModelState.AddModelError("File", "Please Upload Your file");
+                }
+            }
+            return View();
+        }
+
+
+        public int writeToDBTableSup(DataTable dt)
+        {
+            DataBase db = new DataBase();
+            
+            String sql = null;
+            String sqlStart = "insert into supervisor (supervisorid, name, pwd, istutor, isadmin, currency) values ";
+
+            //Console.WriteLine("Write to DB - Start. Records to insert  = {0}", dt.Rows.Count);
+            int x = 0;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                x += 1;
+                if (x == 1)
+                {
+                    sql = String.Format(@"({0},{1},{2},{3},{4},{5})",
+                                          row["userid"],
+                                          row["name"],
+                                          row["password"],
+                                          row["0"],
+                                          row["0"],
+                                          row["GBP"]
+                                        
+                                          );
+                }
+                else
+                {
+                    sql = String.Format(sql + @"({0},{1},{2},{3},{4},{5})",
+                                          row["userid"],
+                                          row["supervisorname"],
+                                          row["password"],
+                                          row["0"],
+                                          row["0"],
+                                          row["GBP"]
+
+                                          );
+
+                }
+
+                if (x == 1000)
+                {
+                    try
+                    {
+                        sql = sqlStart + sql;
+                        db.RunProc(sql);
+                       // MySqlCommand cmd = new MySqlCommand(sql, conn);
+                       // cmd.ExecuteNonQuery();
+                       // Console.WriteLine("Write {0}", x);
+                        x = 0;
+                    }
+                    catch (Exception)
+                    {
+                        return -1;
+                    }
+                }
+
+            }
+            // get any straglers
+            if (x > 0)
+            {
+                try
+                {
+                    sql = sqlStart + sql;
+                    db.RunProc(sql);
+                    //cmd.ExecuteNonQuery();
+                    //Console.WriteLine("Write {0}", x);
+                    x = 0;
+                }
+                catch (Exception)
+                {
+                    return -1;
+                }
+
+            }
+            return 0;
+           // conn.Close();
+           // Console.WriteLine("Write to DB - End.");
         }
 
     }

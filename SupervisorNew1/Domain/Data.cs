@@ -19,10 +19,10 @@ namespace SupervisorNew1.Domain
             menu.Add(new Navbar { Id = 3, nameOption = "Pending Applications", controller = "Home", action = "PendingApplication", imageClass = "fa fa-edit fa-fw", status = true, isParent = false, parentId = 0 });
             menu.Add(new Navbar { Id = 19, nameOption = "Approved Applications", controller = "Home", action = "ApprovedApplication", imageClass = "fa fa-edit fa-fw", status = true, isParent = false, parentId = 0 });
             menu.Add(new Navbar { Id = 19, nameOption = "Rejected Applications", controller = "Home", action = "RejectedApplication", imageClass = "fa fa-edit fa-fw", status = true, isParent = false, parentId = 0 });
-           
 
 
-        //    menu.Add(new Navbar { Id = 17, nameOption = "Blank Page", controller = "Home", action = "Blank", status = true, isParent = false, parentId = 0 });
+            menu.Add(new Navbar { Id = 17, nameOption = "Import Staff", controller = "Home", action = "UploadStaff", imageClass = "fa fa-upload fa-fw", status = true, isParent = false, parentId = 0 });
+            menu.Add(new Navbar { Id = 18, nameOption = "Import Student", controller = "Home", action = "UploadStudent", imageClass = "fa fa-upload fa-fw", status = true, isParent = false,  parentId = 0 });
         //    menu.Add(new Navbar { Id = 18, nameOption = "Login Page", controller = "Home", action = "Login", status = true, isParent = false, parentId = 0 });
         //    menu.Add(new Navbar { Id = 7, nameOption = "UI Elements", imageClass = "fa fa-wrench fa-fw", status = true, isParent = true, parentId = 0 });
         //    menu.Add(new Navbar { Id = 8, nameOption = "Panels and Wells", controller = "Home", action = "Panels", status = true, isParent = false, parentId = 7 });

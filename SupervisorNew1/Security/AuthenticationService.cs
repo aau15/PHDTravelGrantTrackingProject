@@ -22,17 +22,40 @@ namespace SupervisorNew1.Security
             }
 
             DataBase db = new DataBase();
-            string sql = "select name ,istutor from supervisor where supervisorid = '" + userName + "' and pwd = '" + pwd + "';";
+            string sql = "select name from supervisor where istutor = 0 and supervisorid = '" + userName + "' and pwd = '" + pwd + "';";
             DataTable dt = db.RunProcReturn(sql, "table").Tables[0];
             
-            if(dt.Rows.Count ==0)
+            if(dt.Rows.Count ==0) // if not supervisor check tutor
             {
-                return null;
+                sql = "select name from tutor where tutorid = '" + userName + "' and pwd = '" + pwd + "';";
+                dt = db.RunProcReturn(sql, "table").Tables[0];
+                
+                if(dt.Rows.Count ==0)
+                {
+                    sql = "select name from admin where adminid = '" + userName + "' and pwd = '" + pwd + "';";
+                    dt = db.RunProcReturn(sql, "table").Tables[0];
+                    if(dt.Rows.Count ==0)
+                    {
+                        return null; // username and pwd not matched
+                    }
+                    else
+                    {
+                        FormsAuthentication.SetAuthCookie(userName, createPersistentCookie);
+                        return new Tuple<string, int>(dt.Rows[0]["name"].ToString(), 2); //admin login
+                    }
+                }
+                else
+                {
+                    FormsAuthentication.SetAuthCookie(userName, createPersistentCookie);
+                    return new Tuple<string, int>(dt.Rows[0]["name"].ToString(), 1); //tutor login
+                }
+                
+                
             }
             else
             {
                 FormsAuthentication.SetAuthCookie(userName, createPersistentCookie);
-                return new Tuple<string, int>(dt.Rows[0]["name"].ToString(), Convert.ToInt32(dt.Rows[0]["istutor"]));
+                return new Tuple<string, int>(dt.Rows[0]["name"].ToString(), 0);
             }
 
 

@@ -56,6 +56,7 @@ namespace SupervisorNew1.Models
         public string studentEmail { get; set; }
         public int isThereTravelReport { get; set; }
         public string currency { get; set; }
+        public int isThereNewMsg { get; set; }
     }
     public class Message
     {

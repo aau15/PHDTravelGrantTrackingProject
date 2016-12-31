@@ -55,7 +55,7 @@
                         <div class="huge">@Model.newAppSize</div>
                         @if (Model.newAppSize.Equals("0") || Model.newAppSize.Equals("1"))
                         {
-                            if(Model.role == 1)
+                            if(Model.role == 1 || Model.role == 3)
                             { 
 
                                 <div>New Application!</div>
@@ -67,7 +67,7 @@
                         }
                         else
                         {
-                            if (Model.role == 1)
+                            if (Model.role == 1 || Model.role == 3)
                             {
 
                                 <div>New Applications!</div>
@@ -136,7 +136,7 @@
     </div>
       -->
 </div>
-@if(Model.role !=3)
+@if(Model.role !=4)
 { 
 <!-- /.row -->
 <div class="row">
@@ -340,7 +340,7 @@
                     </li>
                     <li>
                         <div class="timeline-badge info">
-                            <i class="fa fa-save"></i>
+                            <i class="fa fa-upload fa-fw"></i>
                         </div>
                         <div class="timeline-panel">
                             <div class="timeline-heading">

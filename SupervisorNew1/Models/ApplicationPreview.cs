@@ -9,7 +9,9 @@ namespace SupervisorNew1.Models
     {
         public List<ApplicationPreview> previewList { get; set; }
         public int role;
-        public int operation;// 1==all ; 2==the rest
+        public int operation;// 1==all ; 2=new application ;3 = pending application 4= approved application; 5= rejected application
+                            // 6 == new message
+        
     }
     public class ApplicationPreview
     {
