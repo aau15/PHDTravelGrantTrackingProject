@@ -58,6 +58,7 @@ namespace SupervisorNew1.Models
         public string currency { get; set; }
         public int isThereNewMsg { get; set; }
     }
+
     public class Message
     {
         public string messageId { get; set; }
@@ -68,6 +69,7 @@ namespace SupervisorNew1.Models
         public string seenStatus { get; set; }
         public int isYours { get; set; }
     }
+
     public class FundedTrip
     {
         public string dClaim { get; set; }
@@ -78,8 +80,7 @@ namespace SupervisorNew1.Models
     }
 
     public class FundsUsedPYearList
-    {
-        
+    {       
         public int studentCount { get; set; }
         public int role { get; set; }
         public List<FundsUsedPerYear> fundsUsedPerYearList {get;set;}
@@ -88,6 +89,7 @@ namespace SupervisorNew1.Models
         public List<studentMonthlyList> fundsUsedPerStudentPerMonthList { get; set; }
         public string newAppSize { get; set; }
         public string newMsgSize { get; set; }
+        public string newDocSize { get; set; }
     }
 
 
@@ -97,9 +99,6 @@ namespace SupervisorNew1.Models
     {
         public string studentName { get; set; }
         public int totalFundsUsed { get; set; }
-
-
-
     }
 
     public class FundsUsedPerSup
@@ -116,7 +115,6 @@ namespace SupervisorNew1.Models
 
     public class studentMonthlyList
     {
-   //     public string id {get;set;}
         public string name { get; set; }
         public List<FundsUsedPerStudentMonth> fStudentMonthlyList { get; set; }
     }

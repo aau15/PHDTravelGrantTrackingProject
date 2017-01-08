@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Globalization;
 using ICSharpCode;
 using Excel;
+using Ionic.Zip;
 
 
 namespace SupervisorNew1.Controllers
@@ -32,10 +33,13 @@ namespace SupervisorNew1.Controllers
                 ViewBag.message = "Please Sign in first";
                 return RedirectToAction("Login"); 
             }
+
             LoginData lg = (LoginData)Session["LoginData"];
-             string sql = "";
-             string sqlAppSize = "";
+            string sql = "";
+            string sqlAppSize = "";
             string sqlNewMsg = "";
+            string sqlNewDoc = "";
+
             if(lg.role == 1)
             {
                 sql = "select student.name, student.studentid, traveldate, month(traveldate) as mon, year(traveldate) as y, amountreceived from trip join student on trip.studentid = student.studentid join supervisor on student.supervisorid = supervisor.supervisorid where isfunddispatched = 1 AND student.supervisorid = '" + lg.username + "' order by traveldate asc;";
@@ -64,6 +68,7 @@ namespace SupervisorNew1.Controllers
             }
           
 
+
             if(lg.role == 1 )
             {
                 sqlNewMsg = "select count(messageid) as size from message where supervisorid ='"+ lg.username+"' and seenbysup = 0";
@@ -73,11 +78,16 @@ namespace SupervisorNew1.Controllers
                 sqlNewMsg = "select count(messageid) as size from message where tutorid = '" + lg.username + "' and seenbytut =0";
             }
             
-          //  string sql = "select traveldate, amountreceived from trip where isfunddispatched = 1 and studentid = (select studentid from student where supervisorid = '" + lg.username + "') order by traveldate asc;";
-          //  ApplicationDetail ad = new ApplicationDetail();
-
-           
-          //  ad.allFundedTrips = new List<FundedTrip>();
+            if(lg.role == 1)
+            {
+                sqlNewDoc = "select count(docid) as size from documents join trip on documents.tripid = trip.tripid join student on trip.studentid = student.studentid where student.supervisorid ='" + lg.username + "' and documents.statusSup = 0";
+            }
+            else if (lg.role == 2)
+            {
+                sqlNewDoc = "select count(docid) as size from documents join trip on documents.tripid = trip.tripid join student on trip.studentid = student.studentid where student.tutorid ='" + lg.username + "' and documents.statusTut = 0";
+            }
+         
+            //ad.allFundedTrips = new List<FundedTrip>();
 
             //////////// annual funds usage///////
             try
@@ -89,6 +99,7 @@ namespace SupervisorNew1.Controllers
                 FundsUsedPYearList flist = new FundsUsedPYearList();
                 flist.role = lg.role;            
                 flist.newAppSize = Convert.ToString(db.RunProcReturn(sqlAppSize, "table").Tables[0].Rows[0]["size"]);
+
                 try
                 {
                     flist.newMsgSize = Convert.ToString(db.RunProcReturn(sqlNewMsg, "table").Tables[0].Rows[0]["size"]);
@@ -97,6 +108,16 @@ namespace SupervisorNew1.Controllers
                 {
                     flist.newMsgSize = "0";
                 }
+
+                try
+                {
+                    flist.newDocSize = Convert.ToString(db.RunProcReturn(sqlNewDoc, "table").Tables[0].Rows[0]["size"]);
+                }
+                catch(Exception)
+                {
+                    flist.newDocSize = "0";
+                }
+
                 flist.fundsUsedPerYearList = new List<FundsUsedPerYear>();
               
                 for (int i = 0; i < dt.Rows.Count;)
@@ -109,11 +130,9 @@ namespace SupervisorNew1.Controllers
                     while (previousYear.Equals(currentYear))
                     {
                         double tempfunds = Convert.ToDouble(f.totalFundsUsed);
-                        tempfunds += Convert.ToDouble(dt.Rows[i]["amountreceived"]);
-                       
+                        tempfunds += Convert.ToDouble(dt.Rows[i]["amountreceived"]);                       
                         f.totalFundsUsed = Convert.ToInt32(tempfunds);
                         totalFundsUsed += Convert.ToDouble(dt.Rows[i]["amountreceived"]);
-                     
                         
                         if(i < dt.Rows.Count-1)
                         {
@@ -124,15 +143,8 @@ namespace SupervisorNew1.Controllers
                         {
                             i++;
                             break;
-                        }
-                       
-                        
-                      
-                    }
-
-                    
-                    
-                  
+                        }                                  
+                    }                  
                     flist.fundsUsedPerYearList.Add(f);
                 }
 
@@ -244,7 +256,6 @@ namespace SupervisorNew1.Controllers
                             flist.fundsUsedPerStudentPerMonthList.Add(sMList);
                         }
                         sMList = new studentMonthlyList();
-                   //     sMList.id = tempStudentid;
                         sMList.name = sortedDT.Rows[i]["name"].ToString();
                         sMList.fStudentMonthlyList = new List<FundsUsedPerStudentMonth>();
                     }
@@ -261,20 +272,8 @@ namespace SupervisorNew1.Controllers
                 flist.fundsUsedPerStudentPerMonthList.Add(sMList);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-                    ///////////////////// graph by supervisor//////////////////////////////
-                    flist.fundsUsedPerSupList = new List<FundsUsedPerSup>();
+                ///////////////////// graph by supervisor//////////////////////////////
+                flist.fundsUsedPerSupList = new List<FundsUsedPerSup>();
                 if(lg.role == 2 || lg.role == 3)
                 {
                 dv.Sort = "supervisorid asc";
@@ -357,7 +356,7 @@ namespace SupervisorNew1.Controllers
             return View("MorrisCharts");
         }
 
-        public ActionResult Tables() // review application 
+        public ActionResult Tables() // listing of all applications 
         {
             RefreshSession();
             if (Session["LoginData"] == null) //check login
@@ -371,19 +370,17 @@ namespace SupervisorNew1.Controllers
             string sql = "";
             if (lg.role == 1)
             {
-                sql = "select tripid, status, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip"
+                sql = "select tripid, status, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
                      + " from student join trip on student.studentid = trip.studentid"
                      + " where student.supervisorID = '" + currentUserName + "' order by submissiondate desc;";
             }
             else if(lg.role ==2 || lg.role == 3)
             {
-                sql = "select supervisor.name as supName, status, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid  order by submissiondate desc; ";
+                sql = "select supervisor.name as supName, status, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid  order by submissiondate desc; ";
             }
-             
 
             DataTable  dt = data.RunProcReturn(sql,"table").Tables[0]; //get the needed info related to current user
-
-            AllPreviews aps = new AllPreviews(); //create holder for all application preview
+            AllPreviews aps = new AllPreviews(); //create holder for all application previews
             aps.previewList = new List<ApplicationPreview>();
             aps.role = lg.role;            
             for(int i = 0;i<dt.Rows.Count;i++) //put everything to Viewmodel
@@ -420,18 +417,85 @@ namespace SupervisorNew1.Controllers
                 
 
                 ap.conferenceName = dt.Rows[i]["conferencename"].ToString();
+                if(String.IsNullOrEmpty(ap.conferenceName)||String.IsNullOrWhiteSpace(ap.conferenceName))
+                {
+                    ap.conferenceName = dt.Rows[i]["purpose"].ToString();
+                }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
+                if(ap.cityCountry == " ,  ")
+                {
+                    ap.cityCountry = "n/a";
+                }
                 ap.travelDate = Convert.ToDateTime(dt.Rows[i]["traveldate"]).ToString("MM/dd/yyyy");
                 ap.endDate = Convert.ToDateTime(dt.Rows[i]["enddate"]).ToString("MM/dd/yyyy");
                 aps.operation = 1;
                 aps.previewList.Add(ap);
             }
-
-           // data.Close();
-           // string studentName = dt.Rows[0]["name"].ToString();
             return View(aps);
         }
+
+        public ActionResult NewDocument()
+        {
+
+            if (Session["LoginData"] == null) //check login
+            {
+                ViewBag.message = "Please Sign in first";
+                return RedirectToAction("Login");
+            }
+
+            LoginData lg = (LoginData)(Session["LoginData"]);
+            string currentUserName = lg.username;//get user id 
+            DataBase data = new DataBase(); //create db instance
+            string sql = "";
+          
+            if (lg.role == 1)
+            {
+                sql = "select distinct documents.tripid, trip.status, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
+                     + " from student join trip on student.studentid = trip.studentid join documents on trip.tripid = documents.tripid"
+                     + " where documents.statusSup = 0 and student.supervisorID = '" + currentUserName + "' order by submissiondate desc;";
+            }
+            else if (lg.role == 2)
+            {
+                sql = "select distinct documents.tripid, trip.status, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
+                    + " from student join trip on student.studentid = trip.studentid join documents on trip.tripid = documents.tripid"
+                    + " where documents.statusTut = 0 and student.tutorid = '" + currentUserName + "' order by submissiondate desc;";
+            }
+
+            DataTable dt = data.RunProcReturn(sql, "table").Tables[0]; //get the needed info related to current user
+            AllPreviews aps = new AllPreviews(); //create holder for all application preview
+            aps.previewList = new List<ApplicationPreview>();
+            aps.role = lg.role;
+            for (int i = 0; i < dt.Rows.Count; i++) //put everything to Viewmodel
+            {
+                ApplicationPreview ap = new ApplicationPreview();
+                ap.tripID = dt.Rows[i]["tripid"].ToString();
+                ap.studentName = dt.Rows[i]["sName"].ToString();
+                if (lg.role == 2 || lg.role == 3)
+                {
+                    ap.SupervisorName = dt.Rows[i]["supName"].ToString();
+                }
+
+                ap.conferenceName = dt.Rows[i]["conferencename"].ToString();
+                if (String.IsNullOrEmpty(ap.conferenceName) || String.IsNullOrWhiteSpace(ap.conferenceName))
+                {
+                    ap.conferenceName = dt.Rows[i]["purpose"].ToString();
+                }
+                ap.cost = dt.Rows[i]["costoftrip"].ToString();
+                ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
+                if (ap.cityCountry == " ,  ")
+                {
+                    ap.cityCountry = "n/a";
+                }
+
+                ap.travelDate = Convert.ToDateTime(dt.Rows[i]["traveldate"]).ToString("MM/dd/yyyy");
+                ap.endDate = Convert.ToDateTime(dt.Rows[i]["enddate"]).ToString("MM/dd/yyyy");
+                aps.previewList.Add(ap);
+            }
+            aps.operation = 7; 
+            return View("Tables", aps);
+        }
+
 
         public ActionResult NewMessage()
         {
@@ -446,13 +510,13 @@ namespace SupervisorNew1.Controllers
             string sql = "";
             if (lg.role == 1)
             {
-                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip"
+                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
                      + " from student join trip on student.studentid = trip.studentid"
                      + " where tripid in (select tripid from message where seenbysup = 0 and supervisorid = '" + currentUserName + "');";
             }
             else if (lg.role == 2 || lg.role == 3)
             {
-                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip"
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
                      + " from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid"
                      + " where tripid in (select tripid from message where seenbytut = 0 and tutorid = '" + currentUserName + "');";
             }
@@ -471,8 +535,16 @@ namespace SupervisorNew1.Controllers
                     ap.SupervisorName = dt.Rows[i]["supName"].ToString();
                 }
                 ap.conferenceName = dt.Rows[i]["conferencename"].ToString();
+                if (String.IsNullOrEmpty(ap.conferenceName) || String.IsNullOrWhiteSpace(ap.conferenceName))
+                {
+                    ap.conferenceName = dt.Rows[i]["purpose"].ToString();
+                }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
+                if (ap.cityCountry == " ,  ")
+                {
+                    ap.cityCountry = "n/a";
+                }
                 ap.travelDate = Convert.ToDateTime(dt.Rows[i]["traveldate"]).ToString("MM/dd/yyyy");
                 ap.endDate = Convert.ToDateTime(dt.Rows[i]["enddate"]).ToString("MM/dd/yyyy");
                 aps.previewList.Add(ap);
@@ -497,13 +569,13 @@ namespace SupervisorNew1.Controllers
             string sql = "";
             if (lg.role == 1)
             {
-                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip"
+                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
                      + " from student join trip on student.studentid = trip.studentid"
                      + " where status = 1 and student.supervisorID = '" + currentUserName + "';";
             }
             else if (lg.role == 2 || lg.role == 3)
             {
-                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 1 ";
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 1 ";
             }
 
             DataTable dt = data.RunProcReturn(sql, "table").Tables[0]; //get the needed info related to current user
@@ -521,8 +593,16 @@ namespace SupervisorNew1.Controllers
                     ap.SupervisorName = dt.Rows[i]["supName"].ToString();
                 }
                 ap.conferenceName = dt.Rows[i]["conferencename"].ToString();
+                if (String.IsNullOrEmpty(ap.conferenceName) || String.IsNullOrWhiteSpace(ap.conferenceName))
+                {
+                    ap.conferenceName = dt.Rows[i]["purpose"].ToString();
+                }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
+                if (ap.cityCountry == " ,  ")
+                {
+                    ap.cityCountry = "n/a";
+                }
                 ap.travelDate = Convert.ToDateTime(dt.Rows[i]["traveldate"]).ToString("MM/dd/yyyy");
                 ap.endDate = Convert.ToDateTime(dt.Rows[i]["enddate"]).ToString("MM/dd/yyyy");
                 aps.previewList.Add(ap);
@@ -547,13 +627,13 @@ namespace SupervisorNew1.Controllers
             string sql = "";
             if (lg.role == 1)
             {
-                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip"
+                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
                      + " from student join trip on student.studentid = trip.studentid"
                      + " where status = 2 and student.supervisorID = '" + currentUserName + "';";
             }
             else if (lg.role == 2 || lg.role ==3)
             {
-                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 2 ";
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 2 ";
             }
 
             DataTable dt = data.RunProcReturn(sql, "table").Tables[0]; //get the needed info related to current user
@@ -571,15 +651,22 @@ namespace SupervisorNew1.Controllers
                     ap.SupervisorName = dt.Rows[i]["supName"].ToString();
                 }
                 ap.conferenceName = dt.Rows[i]["conferencename"].ToString();
+                if (String.IsNullOrEmpty(ap.conferenceName) || String.IsNullOrWhiteSpace(ap.conferenceName))
+                {
+                    ap.conferenceName = dt.Rows[i]["purpose"].ToString();
+                }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
+                if (ap.cityCountry == " ,  ")
+                {
+                    ap.cityCountry = "n/a";
+                }
                 ap.travelDate = Convert.ToDateTime(dt.Rows[i]["traveldate"]).ToString("MM/dd/yyyy");
                 ap.endDate = Convert.ToDateTime(dt.Rows[i]["enddate"]).ToString("MM/dd/yyyy");
                 aps.previewList.Add(ap);
             }
 
-            // data.Close();
-            // string studentName = dt.Rows[0]["name"].ToString();
+          
             aps.operation = 3;
             return View("Tables", aps);
 
@@ -601,13 +688,13 @@ namespace SupervisorNew1.Controllers
             string sql = "";
             if (lg.role == 1 )
             {
-                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip"
+                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
                      + " from student join trip on student.studentid = trip.studentid"
                      + " where status = 3 and student.supervisorID = '" + currentUserName + "';";
             }
             else if (lg.role == 2 || lg.role == 3)
             {
-                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 3 ";
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 3 ";
             }
 
             DataTable dt = data.RunProcReturn(sql, "table").Tables[0]; //get the needed info related to current user
@@ -624,9 +711,19 @@ namespace SupervisorNew1.Controllers
                 {
                     ap.SupervisorName = dt.Rows[i]["supName"].ToString();
                 }
+
                 ap.conferenceName = dt.Rows[i]["conferencename"].ToString();
+                if (String.IsNullOrEmpty(ap.conferenceName) || String.IsNullOrWhiteSpace(ap.conferenceName))
+                {
+                    ap.conferenceName = dt.Rows[i]["purpose"].ToString();
+                }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
+                if (ap.cityCountry == " ,  ")
+                {
+                    ap.cityCountry = "n/a";
+                }
+
                 ap.travelDate = Convert.ToDateTime(dt.Rows[i]["traveldate"]).ToString("MM/dd/yyyy");
                 ap.endDate = Convert.ToDateTime(dt.Rows[i]["enddate"]).ToString("MM/dd/yyyy");
                 aps.previewList.Add(ap);
@@ -653,13 +750,13 @@ namespace SupervisorNew1.Controllers
             string sql = "";
             if (lg.role == 1)
             {
-                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip"
+                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
                      + " from student join trip on student.studentid = trip.studentid"
                      + " where status = 4 and student.supervisorID = '" + currentUserName + "';";
             }
             else if (lg.role == 2 || lg.role ==3)
             {
-                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 4 ";
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 4 ";
             }
 
             DataTable dt = data.RunProcReturn(sql, "table").Tables[0]; //get the needed info related to current user
@@ -676,16 +773,25 @@ namespace SupervisorNew1.Controllers
                 {
                     ap.SupervisorName = dt.Rows[i]["supName"].ToString();
                 }
+
                 ap.conferenceName = dt.Rows[i]["conferencename"].ToString();
+                if (String.IsNullOrEmpty(ap.conferenceName) || String.IsNullOrWhiteSpace(ap.conferenceName))
+                {
+                    ap.conferenceName = dt.Rows[i]["purpose"].ToString();
+                }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
+                if (ap.cityCountry == " ,  ")
+                {
+                    ap.cityCountry = "n/a";
+                }
+
                 ap.travelDate = Convert.ToDateTime(dt.Rows[i]["traveldate"]).ToString("MM/dd/yyyy");
                 ap.endDate = Convert.ToDateTime(dt.Rows[i]["enddate"]).ToString("MM/dd/yyyy");
                 aps.previewList.Add(ap);
             }
 
-            // data.Close();
-            // string studentName = dt.Rows[0]["name"].ToString();
+            
             aps.operation = 5;
             return View("Tables", aps);
         }
@@ -843,8 +949,6 @@ namespace SupervisorNew1.Controllers
             if(!checkTimeStamp(Convert.ToInt32(id),lg.username))
             {
                 return Content("<script language='javascript' type='text/javascript'>alert('Sorry, but it seems like someone else is making changes to this application');window.history.back();</script>");
-              //  return JavaScript("alert('Sorry, but it seems like someone else is making changes to this application')");
-               // return null;   
             }
 
             
@@ -875,29 +979,34 @@ namespace SupervisorNew1.Controllers
 
 
                 ApplicationDetail ad = new ApplicationDetail();
-                if(dtDocument.Rows.Count == 1)
-                {                  
-                    if(Convert.ToInt32(dtDocument.Rows[0]["purpose"])== 1 )
+               
+                    int a = 1;
+                    int b = 2;
+                    bool supportingDocument = dtDocument.AsEnumerable().Any(row => a == row.Field<int>("purpose"));
+                    bool travelReport = dtDocument.AsEnumerable().Any(row => b == row.Field<int>("purpose"));
+                    if(supportingDocument)
                     {
                         ad.isThereDocument = 1;
-                        ad.isThereTravelReport = 0;
+                       
                     }
                     else
                     {
                         ad.isThereDocument = 0;
+                     
+                    }
+
+                    if(travelReport)
+                    {
+                      
                         ad.isThereTravelReport = 1;
-                    }                        
-                }
-                else if (dtDocument.Rows.Count == 2)
-                {
-                    ad.isThereDocument = 1;
-                    ad.isThereTravelReport = 1;
-                }
-                else
-                {
-                    ad.isThereDocument = 0;
-                    ad.isThereTravelReport = 0;
-                }
+                    }
+                    else
+                    {
+                       
+                        ad.isThereTravelReport = 0;
+                    }
+
+                
                   
                
                 ad.messageList = new List<Message>();
@@ -1171,27 +1280,59 @@ namespace SupervisorNew1.Controllers
                 if (operation.Equals("download") || operation.Equals("travelReport"))
                 {
                     DataBase data = new DataBase();
+                    string sqlupdate = ""; 
                     string sql = "";
+                    string zipName = "";
                     if (operation.Equals("download"))
                     {
+
+                     if(lg.role == 1)
+                     {
+                         sqlupdate = "update documents set statusSup = 1 where tripid =" + tripid + " and purpose = 1";
+                     }
+                     else if (lg.role == 2)
+                     {
+                         sqlupdate = "update documents set statusTut = 1 where tripid =" + tripid + " and purpose = 1";
+                     }
+
+                        
                         sql = "select doctitle, docbody,doctype from documents where tripid =" + tripid + " and purpose = 1;";
+                        zipName = "SupDoc.zip";
                     }
                     else if(operation.Equals("travelReport"))
                     {
+                        if (lg.role == 1)
+                        {
+                            sqlupdate = "update documents set statusSup = 1 where tripid =" + tripid + " and purpose = 2";
+                        }
+                        else if (lg.role == 2)
+                        {
+                            sqlupdate = "update documents set statusTut = 1 where tripid =" + tripid + " and purpose = 2";
+                        }
+                       
                         sql = "select doctitle, docbody,doctype from documents where tripid =" + tripid + " and purpose = 2;";
+                        zipName = "TravelReport.zip";
                     }
                     DataTable dt = data.RunProcReturn(sql, "table").Tables[0];
-                    byte[] file = (byte[])(dt.Rows[0]["docbody"]);
+                    data.RunProc(sqlupdate);
+                    MemoryStream ms = new MemoryStream();
+                    using (var zip = new ZipFile())
+                    {
+                        for (int i = 0; i < dt.Rows.Count; i++)
+                        {
+                            
+                            byte[] file = (byte[])(dt.Rows[i]["docbody"]);
+                            zip.AddEntry((i+1)+"_"+dt.Rows[i]["doctitle"].ToString() + "." + dt.Rows[0]["doctype"].ToString(), file);              
+                        }
+                        zip.Save(ms);
+                    }
+                    
 
-                    MemoryStream ms = new MemoryStream(file);
-                    //Response.ContentType = "application/" + dt.Rows[0]["doctype"].ToString();
-                    //Response.AddHeader("Content-Disposition",
-                    //               "attachment; filename=" + dt.Rows[0]["doctitle"].ToString() + ";");
-                   
-                    return File(file, "application/" + dt.Rows[0]["doctype"].ToString(), dt.Rows[0]["doctitle"].ToString() + "." + dt.Rows[0]["doctype"].ToString());
-                   //  FileContentResult fcr = new FileContentResult(file, "application/pdf");
-                     
-                     
+                    ms.Position = 0;
+                    return File(ms, "application/zip", zipName);
+                    //return File(file, "application/" + dt.Rows[0]["doctype"].ToString(), 
+                    //            dt.Rows[0]["doctitle"].ToString() + "." + dt.Rows[0]["doctype"].ToString());
+                    //  FileContentResult fcr = new FileContentResult(file, "application/pdf");              
                 }
 
          
@@ -1369,7 +1510,7 @@ namespace SupervisorNew1.Controllers
             else if(operation == "dispatchFund")
             {
                 DataBase data = new DataBase();
-                string sql = "update trip set isfunddispatched= 1 where tripid =" + tripid + ";";
+                string sql = "update trip set isfunddispatched= 1 where tripid =" + tripid + "; ";
                 try
                 {
                     data.RunProc(sql);
@@ -1493,7 +1634,7 @@ namespace SupervisorNew1.Controllers
 
                 mail.Body = "<i>Dear " + studentName + ":<i> <br /><br />" +
                            statusMsgFront+ "<i>Your application #" + tripid + " has been <i>"+statusString+" <br/><br/> " +
-                "<i>Remainder from PHD Travel Easy team<i><br /> <br />  <br />  <br />  <br />" +            
+                "<i>Remainder from PHD Travel grant<i><br /> <br />  <br />  <br />  <br />" +            
 
                 "<i> This is an auto generated message</i> <br />";
 

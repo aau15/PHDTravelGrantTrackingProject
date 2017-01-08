@@ -61,7 +61,7 @@
                     <td>
                         @if (Model.messageCount > 1)
                         {
-                            <button type="button" class="btn btn-outline btn-primary" data-toggle="dropdown" href="#">@Model.messageCount Messages</button>
+                            <button type="button" class="btn btn-outline btn-primary" data-toggle="dropdown" onclick="updateSeen(@Model.tripID)" href="#">@Model.messageCount Messages</button>
                         }
                         else
                         {
@@ -1077,8 +1077,9 @@
     
 </script>
 
+<!--
                 <script>
-                    function updateSeen(id, messageid) {
+                    function updateSeen(id,messageid) {
 
                         var ele = document.getElementById(messageid);
                         var status = ele.innerHTML.substring(1, 5);
@@ -1105,6 +1106,33 @@
 
                     }
                 </script>
+-->
+
+<script>
+    function updateSeen(id) {
+
+      //  var ele = document.getElementById(messageid);
+     //   var status = ele.innerHTML.substring(1, 5);
+        
+            $.ajax({
+                url: '/Home/UpdateSeen',
+                type: 'POST',
+                contentType: 'application/json;',
+                data: JSON.stringify({ id: id }),
+                success: function (valid) {
+                    if (valid) {
+
+                    } else {
+
+                    }
+                }
+            });
+       
+
+
+    }
+</script>
+
 
 <script type="text/javascript">
     var idleTime = 0;

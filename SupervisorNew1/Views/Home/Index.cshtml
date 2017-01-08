@@ -19,7 +19,7 @@
             <div class="panel-heading">
                 <div class="row">
                     <div class="col-xs-3">
-                        <i class="fa fa-comments fa-5x"></i>
+                        <i class="fa fa-envelope-o fa-5x"></i>
                     </div>
                     <div class="col-xs-9 text-right">
                         <div class="huge">@Model.newMsgSize</div>
@@ -44,6 +44,7 @@
             </a>
         </div>
     </div>
+
     <div class="col-lg-3 col-md-6">
         <div class="panel panel-green">
             <div class="panel-heading">
@@ -89,6 +90,37 @@
             </a>
         </div>
     </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-file-pdf-o fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge">@Model.newDocSize</div>
+                        @if (Model.newDocSize.Equals("0") || Model.newDocSize.Equals("1"))
+                        {
+                            <div>New Document!</div>
+                        }
+                        else
+                        {
+                            <div>New Documents!</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <a href="NewDocument">
+                <div class="panel-footer">
+                    <span class="pull-left">View Details</span>
+                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+
   <!--  <div class="col-lg-3 col-md-6">
         <div class="panel panel-yellow">
             <div class="panel-heading">
@@ -141,27 +173,27 @@
 <!-- /.row -->
 <div class="row">
 
-    <div class="col-lg-8">
+    <div class="col-lg-9">
         <div class="panel panel-default">
             <div class="panel-heading">
                 <i class="fa fa-bar-chart-o fa-fw"></i> Funds Usage Chart
                 <div class="pull-right">
                     <div class="btn-group" hidden="hidden">
                         <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-                            Actions
+                            Display
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu pull-right" role="menu">
                             <li>
-                                <a onclick="changeChart('year')">By Year</a>
+                                <a onclick="changeChart('year')">By Years</a>
                             </li>
                             <li>
-                                <a onclick="changeChart('student')">By Student</a>
+                                <a onclick="changeChart('student')">By Students</a>
                             </li>
                             @if(Model.role == 2 || Model.role == 3)
                             { 
                             <li>
-                                <a onclick="changeChart('sup')">By Supervisor</a>
+                                <a onclick="changeChart('sup')">By Supervisors</a>
                             </li>
                             }
                             <li class="divider"></li>

@@ -31,3 +31,5 @@ C:\Users\larrylaptop\documents\visual studio 2013\Projects\SupervisorNew1\Superv
 C:\Users\larrylaptop\Documents\visual studio 2013\Projects\SupervisorNew1\SupervisorNew1\bin\Excel.dll
 C:\Users\larrylaptop\Documents\visual studio 2013\Projects\SupervisorNew1\SupervisorNew1\bin\ICSharpCode.SharpZipLib.dll
 C:\Users\larrylaptop\Documents\visual studio 2013\Projects\SupervisorNew1\SupervisorNew1\bin\Excel.pdb
+C:\Users\larrylaptop\documents\visual studio 2013\Projects\SupervisorNew1\SupervisorNew1\bin\DotNetZip.dll
+C:\Users\larrylaptop\documents\visual studio 2013\Projects\SupervisorNew1\SupervisorNew1\bin\DotNetZip.xml
