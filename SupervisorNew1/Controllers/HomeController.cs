@@ -1151,7 +1151,7 @@ namespace SupervisorNew1.Controllers
                 double totalRemained = 3000 - totalFundsUsed;
                 double totalRemained12M = 2000 - totalFundsUsed12M;
                 ad.totalRemained = Convert.ToString(totalRemained);
-                ad.remained12M = Convert.ToString(totalFundsUsed12M);
+                ad.remained12M = Convert.ToString(totalRemained12M);
                 double totalFee = Convert.ToDouble(dt.Rows[0]["costoftrip"]);
                 ad.maxAllowed = Convert.ToString(Math.Max(0, Min(totalFee, 1250, totalRemained, totalRemained12M)));
 
