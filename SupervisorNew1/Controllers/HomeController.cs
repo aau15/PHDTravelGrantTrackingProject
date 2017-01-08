@@ -451,13 +451,13 @@ namespace SupervisorNew1.Controllers
           
             if (lg.role == 1)
             {
-                sql = "select distinct documents.tripid, trip.status, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
+                sql = "select distinct documents.tripid, trip.status, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,trip.purpose"
                      + " from student join trip on student.studentid = trip.studentid join documents on trip.tripid = documents.tripid"
                      + " where documents.statusSup = 0 and student.supervisorID = '" + currentUserName + "' order by submissiondate desc;";
             }
             else if (lg.role == 2)
             {
-                sql = "select distinct documents.tripid, trip.status, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
+                sql = "select distinct documents.tripid, trip.status, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,trip.purpose"
                     + " from student join trip on student.studentid = trip.studentid join documents on trip.tripid = documents.tripid"
                     + " where documents.statusTut = 0 and student.tutorid = '" + currentUserName + "' order by submissiondate desc;";
             }
@@ -510,13 +510,13 @@ namespace SupervisorNew1.Controllers
             string sql = "";
             if (lg.role == 1)
             {
-                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
+                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,trip.purpose"
                      + " from student join trip on student.studentid = trip.studentid"
                      + " where tripid in (select tripid from message where seenbysup = 0 and supervisorid = '" + currentUserName + "');";
             }
             else if (lg.role == 2 || lg.role == 3)
             {
-                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,trip.purpose"
                      + " from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid"
                      + " where tripid in (select tripid from message where seenbytut = 0 and tutorid = '" + currentUserName + "');";
             }
@@ -569,13 +569,13 @@ namespace SupervisorNew1.Controllers
             string sql = "";
             if (lg.role == 1)
             {
-                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
+                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,trip.purpose"
                      + " from student join trip on student.studentid = trip.studentid"
                      + " where status = 1 and student.supervisorID = '" + currentUserName + "';";
             }
             else if (lg.role == 2 || lg.role == 3)
             {
-                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 1 ";
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,trip.purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 1 ";
             }
 
             DataTable dt = data.RunProcReturn(sql, "table").Tables[0]; //get the needed info related to current user
@@ -627,13 +627,13 @@ namespace SupervisorNew1.Controllers
             string sql = "";
             if (lg.role == 1)
             {
-                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
+                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,trip.purpose"
                      + " from student join trip on student.studentid = trip.studentid"
                      + " where status = 2 and student.supervisorID = '" + currentUserName + "';";
             }
             else if (lg.role == 2 || lg.role ==3)
             {
-                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 2 ";
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,trip.purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 2 ";
             }
 
             DataTable dt = data.RunProcReturn(sql, "table").Tables[0]; //get the needed info related to current user
@@ -688,13 +688,13 @@ namespace SupervisorNew1.Controllers
             string sql = "";
             if (lg.role == 1 )
             {
-                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
+                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,trip.purpose"
                      + " from student join trip on student.studentid = trip.studentid"
                      + " where status = 3 and student.supervisorID = '" + currentUserName + "';";
             }
             else if (lg.role == 2 || lg.role == 3)
             {
-                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 3 ";
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,trip.purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 3 ";
             }
 
             DataTable dt = data.RunProcReturn(sql, "table").Tables[0]; //get the needed info related to current user
@@ -750,13 +750,13 @@ namespace SupervisorNew1.Controllers
             string sql = "";
             if (lg.role == 1)
             {
-                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,purpose"
+                sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,trip.purpose"
                      + " from student join trip on student.studentid = trip.studentid"
                      + " where status = 4 and student.supervisorID = '" + currentUserName + "';";
             }
             else if (lg.role == 2 || lg.role ==3)
             {
-                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 4 ";
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,trip.purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 4 ";
             }
 
             DataTable dt = data.RunProcReturn(sql, "table").Tables[0]; //get the needed info related to current user
