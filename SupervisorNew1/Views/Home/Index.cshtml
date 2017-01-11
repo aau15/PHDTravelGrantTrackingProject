@@ -22,16 +22,19 @@
                         <i class="fa fa-envelope-o fa-5x"></i>
                     </div>
                     <div class="col-xs-9 text-right">
-                        <div class="huge">@Model.newMsgSize</div>
-                        @if(Model.newMsgSize.Equals( "0") || Model.newMsgSize.Equals("1"))
-                        { 
                         
+                        <div class="huge">@Model.newMsgSize</div>
+                        @if (Model.newMsgSize.Equals("0") || Model.newMsgSize.Equals("1"))
+                        {
+
                             <div>New Message!</div>
                         }
                         else
-                        {
+                        { 
+
                             <div>New Messages!</div>
                         }
+                     
                     </div>
                 </div>
             </div>
@@ -81,6 +84,8 @@
                     </div>
                 </div>
             </div>
+            @if(@Model.role == 1 || @Model.role == 3)
+            { 
             <a href="NewApplication">
                 <div class="panel-footer">
                     <span class="pull-left">View Details</span>
@@ -88,6 +93,17 @@
                     <div class="clearfix"></div>
                 </div>
             </a>
+            }
+            else if (@Model.role == 2)
+            {
+                <a href="PendingApplication">
+                    <div class="panel-footer">
+                        <span class="pull-left">View Details</span>
+                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                        <div class="clearfix"></div>
+                    </div>
+                </a>
+            }
         </div>
     </div>
 

@@ -21,8 +21,41 @@ namespace SupervisorNew1.Controllers
    
     public class HomeController : Controller
     {
-        
-       
+         
+        //public ActionResult MessagePanel()
+        //{
+        //    try
+        //    {
+        //        if (Session["LoginData"] != null)
+        //        {
+        //            DataBase db = new DataBase();
+
+        //            LoginData lg = (LoginData)Session["LoginData"];
+        //            string sqlNewMsg = "";
+        //            if (lg.role == 1)
+        //            {
+        //                sqlNewMsg = "select count(messageid) as size from message where supervisorid ='" + lg.username + "' and seenbysup = 0";
+        //            }
+        //            else if (lg.role == 2)
+        //            {
+        //                sqlNewMsg = "select count(messageid) as size from message where tutorid = '" + lg.username + "' and seenbytut =0";
+        //            }
+
+        //            FundsUsedPYearList flist = new FundsUsedPYearList();
+        //            flist.newMsgSize = Convert.ToString(db.RunProcReturn(sqlNewMsg, "table").Tables[0].Rows[0]["size"]);
+        //            return View(flist);
+        //        }
+        //        else
+        //        {
+        //            return RedirectToAction("Index");
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return null;
+        //    }
+           
+        //}
 
 
         public ActionResult Index()
@@ -289,7 +322,7 @@ namespace SupervisorNew1.Controllers
                     if (tempSupid.Equals(currentId))
                     {
 
-                        double tempfunds = Convert.ToDouble(fs.totalFundsUsed);
+                        double tempfunds = Convert.ToDouble(fSup.totalFundsUsed);
                         tempfunds += Convert.ToDouble(sortedDT.Rows[i]["amountreceived"]);
                         fSup.totalFundsUsed = Convert.ToInt32(tempfunds);
 
@@ -423,7 +456,7 @@ namespace SupervisorNew1.Controllers
                 }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
-                if(ap.cityCountry == " ,  ")
+                if (ap.cityCountry == " ,  " || ap.cityCountry == ", ")
                 {
                     ap.cityCountry = "n/a";
                 }
@@ -457,8 +490,8 @@ namespace SupervisorNew1.Controllers
             }
             else if (lg.role == 2)
             {
-                sql = "select distinct documents.tripid, trip.status, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,trip.purpose"
-                    + " from student join trip on student.studentid = trip.studentid join documents on trip.tripid = documents.tripid"
+                sql = "select distinct supervisor.name as supName, documents.tripid, trip.status, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,trip.purpose"
+                    + " from student join trip on student.studentid = trip.studentid join documents on trip.tripid = documents.tripid join supervisor on student.supervisorid = supervisor.supervisorid"
                     + " where documents.statusTut = 0 and student.tutorid = '" + currentUserName + "' order by submissiondate desc;";
             }
 
@@ -483,7 +516,7 @@ namespace SupervisorNew1.Controllers
                 }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
-                if (ap.cityCountry == " ,  ")
+                if (ap.cityCountry == " ,  " || ap.cityCountry == ", ")
                 {
                     ap.cityCountry = "n/a";
                 }
@@ -541,7 +574,7 @@ namespace SupervisorNew1.Controllers
                 }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
-                if (ap.cityCountry == " ,  ")
+                if (ap.cityCountry == " ,  " || ap.cityCountry == ", ")
                 {
                     ap.cityCountry = "n/a";
                 }
@@ -599,7 +632,7 @@ namespace SupervisorNew1.Controllers
                 }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
-                if (ap.cityCountry == " ,  ")
+                if (ap.cityCountry == " ,  " || ap.cityCountry == ", ")
                 {
                     ap.cityCountry = "n/a";
                 }
@@ -657,7 +690,7 @@ namespace SupervisorNew1.Controllers
                 }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
-                if (ap.cityCountry == " ,  ")
+                if (ap.cityCountry == " ,  " || ap.cityCountry == ", ")
                 {
                     ap.cityCountry = "n/a";
                 }
@@ -719,7 +752,7 @@ namespace SupervisorNew1.Controllers
                 }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
-                if (ap.cityCountry == " ,  ")
+                if (ap.cityCountry == " ,  " || ap.cityCountry == ", ")
                 {
                     ap.cityCountry = "n/a";
                 }
@@ -752,11 +785,15 @@ namespace SupervisorNew1.Controllers
             {
                 sql = "select tripid, student.name as sName, conferencename, city, country ,traveldate,enddate,costoftrip,trip.purpose"
                      + " from student join trip on student.studentid = trip.studentid"
-                     + " where status = 4 and student.supervisorID = '" + currentUserName + "';";
+                     + " where status = 4 or status = 5 and student.supervisorID = '" + currentUserName + "';";
             }
-            else if (lg.role == 2 || lg.role ==3)
+            else if (lg.role == 2)
             {
-                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,trip.purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 4 ";
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,trip.purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 4 or status = 5 and student.tutorid = '" + currentUserName + "';";
+            }
+            else if (lg.role == 3)
+            {
+                sql = "select supervisor.name as supName, tripid, student.name as sName, conferencename, city, country, traveldate, enddate,costoftrip,trip.purpose from student join trip on student.studentid = trip.studentid join supervisor on student.supervisorid = supervisor.supervisorid where status = 4 or status = 5";
             }
 
             DataTable dt = data.RunProcReturn(sql, "table").Tables[0]; //get the needed info related to current user
@@ -781,7 +818,7 @@ namespace SupervisorNew1.Controllers
                 }
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
-                if (ap.cityCountry == " ,  ")
+                if (ap.cityCountry == " ,  " || ap.cityCountry == ", ")
                 {
                     ap.cityCountry = "n/a";
                 }
@@ -936,7 +973,7 @@ namespace SupervisorNew1.Controllers
             //    return new FileStreamResult(ms, "application/pdf");
         }
 
-        public ActionResult Blank(string id, string viewBagMsg) 
+        public ActionResult Application(string id, string viewBagMsg) 
         {
             RefreshSession();
             if (Session["LoginData"] == null)
@@ -1018,7 +1055,7 @@ namespace SupervisorNew1.Controllers
                     m.messageTitle = dtMessage.Rows[i]["messagetitle"].ToString();
                     m.senderName = dtMessage.Rows[i]["sendername"].ToString();
                     DateTime ts = Convert.ToDateTime(dtMessage.Rows[i]["timestamp"].ToString());
-                    ts = ts.AddHours(8.0);
+                    //ts = ts.AddHours(8.0);
                     m.timeStamp = ts.ToString();
                     
                     m.messageId = dtMessage.Rows[i]["messageid"].ToString();
@@ -1084,7 +1121,7 @@ namespace SupervisorNew1.Controllers
                     else
                     {
                         ad.isSupPay = "No";
-                        ad.supPayAmount = "NA";
+                        ad.supPayAmount = "N/A";
                     }
                 }
                 else ad.role = 1;
@@ -1198,7 +1235,7 @@ namespace SupervisorNew1.Controllers
         }
 
         [HttpPost] 
-        public ActionResult Blank(string studentEmail, string studentname, string studentId,string tripid, string operation, string maxFundInput, string researchAccInput, string commentInput, string messageTitle, string messageBody,  FormCollection frm)
+        public ActionResult Application(string studentEmail, string studentname, string studentId,string tripid, string operation, string maxFundInput, string researchAccInput, string commentInput, string messageTitle, string messageBody,string maxAllowed, FormCollection frm)
         {
             RefreshSession();
             if (Session["LoginData"] == null){
@@ -1206,16 +1243,7 @@ namespace SupervisorNew1.Controllers
             }
              LoginData lg = (LoginData)Session["LoginData"];
             TempData["redirect"] = true;
-            double num;
-            if (!double.TryParse(maxFundInput, out num) && operation.Equals("approve") && lg.role == 1) //check if its a number
-            {              
-                return RedirectToAction("Blank", new { id = tripid, viewBagMsg = "max amount to fund should be a number" });  
-            }
-
-            
-
-            
-            
+           
            
             int applicationStatus = 1;
             int oktoFund = 0;
@@ -1243,10 +1271,10 @@ namespace SupervisorNew1.Controllers
                     string senderName = lg.name;
                     string sqlInsertMessage = "";
                     if (lg.role == 1)
-                        sqlInsertMessage = "insert into message (sendername, studentid, tutorid, tripid, messagebody, messagetitle, timestamp,seenbysup,seenbystudent,seenbytut) values ('" +senderName +"','" + studentId + "','t1234'," + tripid + ",'" + messageBody + "','" + messageTitle + "', NOW()," + "1,0,0);";
+                        sqlInsertMessage = "insert into message (sendername, studentid, tutorid, tripid, messagebody, messagetitle, timestamp,seenbysup,seenbystudent,seenbytut) values ('" + senderName + "','" + studentId + "','t1234'," + tripid + ",'" + messageBody + "','" + messageTitle + "', NOW() + INTERVAL 8 HOUR," + "1,0,0);";
                     else if(lg.role ==2)
                     {
-                        sqlInsertMessage = "insert into message (sendername, studentid, tutorid, tripid, messagebody, messagetitle, timestamp,seenbysup,seenbystudent,seenbytut) values ('" + senderName + "','" + studentId + "','t1234'," + tripid + ",'" + messageBody + "','" + messageTitle + "', NOW()," + "0,0,1);";
+                        sqlInsertMessage = "insert into message (sendername, studentid, tutorid, tripid, messagebody, messagetitle, timestamp,seenbysup,seenbystudent,seenbytut) values ('" + senderName + "','" + studentId + "','t1234'," + tripid + ",'" + messageBody + "','" + messageTitle + "', NOW() + INTERVAL 8 HOUR," + "0,0,1);";
                     }
 
                     try
@@ -1273,7 +1301,7 @@ namespace SupervisorNew1.Controllers
                 ad.messageList.Insert(0, m);
                 ad.messageCount++;
                 Session["ApplicationDetail"] = ad;
-                return RedirectToAction("Blank", new { id = tripid, viewBagMsg = ViewBag.message });
+                return RedirectToAction("Application", new { id = tripid, viewBagMsg = ViewBag.message });
             }
             else if(operation!="dispatchFund")
             {
@@ -1365,7 +1393,7 @@ namespace SupervisorNew1.Controllers
                         ViewBag.message = "Failed to revert decision, please check your database connection";
                         
                     }
-                    return RedirectToAction("Blank", new { id = tripid, viewBagMsg = ViewBag.message });
+                    return RedirectToAction("Application", new { id = tripid, viewBagMsg = ViewBag.message });
                 }
 
 
@@ -1401,18 +1429,23 @@ namespace SupervisorNew1.Controllers
                     {
                         if (lg.role == 1)
                         {
-                            if (applicationStatus == 2 && (String.IsNullOrEmpty(maxFundInput) || String.IsNullOrEmpty(researchAccInput))) //if approve but required detail not entered
+                            if (applicationStatus == 2 && (String.IsNullOrEmpty(maxFundInput) && oktoFund == 1 || String.IsNullOrEmpty(researchAccInput) && oktoFund == 1)) //if approve but required detail not entered
                             {
-                                ViewBag.message = "Max funding column and research account column can not be empty!";
+                                ViewBag.message = "Amount to fund or research account must not be empty!";
                                 if (Session["ApplicationDetail"] != null)
                                 {
                                     //ApplicationDetail ad = (ApplicationDetail)Session["ApplicationDetail"];
-                                    return RedirectToAction("Blank", new { id = tripid, viewBagMsg = ViewBag.message });
+                                    return RedirectToAction("Application", new { id = tripid, viewBagMsg = ViewBag.message });
                                 }
                                 else
                                     return RedirectToAction("Index");
-
                             }
+                            
+                            double num;
+                            if (!double.TryParse(maxFundInput, out num) && operation.Equals("approve") && lg.role == 1 && oktoFund ==1) //check if its a number
+                            {
+                                return RedirectToAction("Application", new { id = tripid, viewBagMsg = "Amount to fund must be a number" });
+                            }   
                         }
                         
                         if ((applicationStatus == 4 || applicationStatus==5) && String.IsNullOrEmpty(commentInput)) //reject but no comment
@@ -1421,7 +1454,7 @@ namespace SupervisorNew1.Controllers
                             if (Session["ApplicationDetail"] != null)
                             {
                               //  ApplicationDetail ad = (ApplicationDetail)Session["ApplicationDetail"];
-                                return RedirectToAction("Blank", new { id = tripid, viewBagMsg = ViewBag.message });
+                                return RedirectToAction("Application", new { id = tripid, viewBagMsg = ViewBag.message });
                             }
                             else
                                 return RedirectToAction("Index");
@@ -1434,11 +1467,27 @@ namespace SupervisorNew1.Controllers
                             {
                                 if (applicationStatus == 2 )
                                 {
-                                    sql = "update trip set maxtofund =" + maxFundInput + ",  researchacc='" + researchAccInput + "', status=" + applicationStatus + ", oktofund =" + oktoFund + ", scomment ='" + commentInput + "' where tripid =" + tripid + ";";
+                                    if (oktoFund == 1)
+                                    {
+                                        sql = "update trip set maxtofund =" + maxFundInput + ",  researchacc='" + researchAccInput + "', status=" + applicationStatus + ", oktofund =" + oktoFund + ", scomment ='" + commentInput + "' where tripid =" + tripid + ";";
+                                    }
+                                    else
+                                    {
+                                        if (String.IsNullOrEmpty(commentInput))
+                                        {
+                                            sql = "update trip set status=" + applicationStatus + ", oktofund =" + oktoFund + " where tripid =" + tripid + ";";
+                                        }
+                                        else
+                                        {
+                                            sql = "update trip set status=" + applicationStatus + ", oktofund =" + oktoFund + ", scomment ='" + commentInput + "' where tripid =" + tripid + ";";
+                                        }
+                                    }
+                                    ViewBag.message = "Application approved";
                                 }
                                 else if (applicationStatus == 4 )
                                 {
                                     sql = "update trip set status = " + applicationStatus + ",scomment ='" + commentInput + "' where tripid =" + tripid + ";";
+                                    ViewBag.message = "Application rejected";
                                 }
                             }
                             else if (lg.role == 2)
@@ -1456,9 +1505,16 @@ namespace SupervisorNew1.Controllers
                             }
                             try
                             {
-                                data.RunProc(sql); //update the database 
+                                if (data.RunProc(sql) == -1) //update the database 
+                                {
+                                    ViewBag.message = "Failed to update record!";
+                                }
+                                else 
+                                {
+                                    Task.Run(() => SendEmail(studentname, tripid, studentEmail, applicationStatus.ToString()));
+                                }
                                 
-                                Task.Run(() => SendEmail(studentname, tripid, studentEmail, applicationStatus.ToString()));
+                                
                                 
                             }
                             catch (Exception)
@@ -1493,7 +1549,7 @@ namespace SupervisorNew1.Controllers
                                     ad.tComment = commentInput;
                                  }
 
-                                return RedirectToAction("Blank", new { id = tripid, viewBagMsg = ViewBag.message });
+                                return RedirectToAction("Application", new { id = tripid, viewBagMsg = ViewBag.message });
                             }
                             else
                                 return RedirectToAction("Index");
@@ -1510,7 +1566,14 @@ namespace SupervisorNew1.Controllers
             else if(operation == "dispatchFund")
             {
                 DataBase data = new DataBase();
-                string sql = "update trip set isfunddispatched= 1 where tripid =" + tripid + "; ";
+                int fundReceived = 0;
+                if (String.IsNullOrEmpty(maxAllowed))
+                {
+                    fundReceived = 0;
+                }
+                fundReceived = Convert.ToInt32(maxAllowed);
+                
+                string sql = "update trip set isfunddispatched= 1 , amountreceived ="+fundReceived+" where tripid =" + tripid + "; ";
                 try
                 {
                     data.RunProc(sql);
@@ -1537,6 +1600,15 @@ namespace SupervisorNew1.Controllers
             return RedirectToAction("Index");
         }
 
+       public ActionResult Login()
+        {
+            return View();
+        }
+
+      
+
+
+       [HttpPost]
         public ActionResult Login(string username, string password, FormCollection frm)
         {
 
@@ -1575,7 +1647,8 @@ namespace SupervisorNew1.Controllers
                 }
                 else
                 {
-                    return View("Login");
+                
+                    return RedirectToAction("Login");
                 }
 
             }
@@ -1671,27 +1744,28 @@ namespace SupervisorNew1.Controllers
 
         public bool checkTimeStamp(int tripid,string userid)
         {
-            DataBase db = new DataBase();
-            DataTable dt = db.RunProcReturn("select now() as currenttime,lastaccessed,accessid from trip where tripid=" + tripid + ";", "table").Tables[0];
-            DateTime lastAccessed = Convert.ToDateTime(dt.Rows[0]["lastaccessed"]).ToUniversalTime();
-            DateTime now = Convert.ToDateTime(dt.Rows[0]["currenttime"]).AddHours(8).ToUniversalTime();
-            string accessid = dt.Rows[0]["accessid"].ToString();
-             if(lastAccessed.AddMinutes(5)>= now)
-             {
-                 if (userid.Equals(accessid))
-                 {
-                     return true;
-                 }
-                 else
-                 {
-                     return false;
-                 }
+            return true;
+            //DataBase db = new DataBase();
+            //DataTable dt = db.RunProcReturn("select now() as currenttime,lastaccessed,accessid from trip where tripid=" + tripid + ";", "table").Tables[0];
+            //DateTime lastAccessed = Convert.ToDateTime(dt.Rows[0]["lastaccessed"]).ToUniversalTime();
+            //DateTime now = Convert.ToDateTime(dt.Rows[0]["currenttime"]).AddHours(8).ToUniversalTime();
+            //string accessid = dt.Rows[0]["accessid"].ToString();
+            // if(lastAccessed.AddMinutes(5)>= now)
+            // {
+            //     if (userid.Equals(accessid))
+            //     {
+            //         return true;
+            //     }
+            //     else
+            //     {
+            //         return false;
+            //     }
                  
-             }
-             else
-             {
-                 return true;
-             }
+            // }
+            // else
+            // {
+            //     return true;
+            // }
 
         }
 

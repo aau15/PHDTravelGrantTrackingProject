@@ -933,10 +933,11 @@
     <Content Include="Views\Home\Typography.cshtml" />
     <Content Include="Views\Home\Icons.cshtml" />
     <Content Include="Views\Home\Grid.cshtml" />
-    <Content Include="Views\Home\Blank.cshtml" />
+    <Content Include="Views\Home\Application.cshtml" />
     <Content Include="Views\Home\Login.cshtml" />
     <Content Include="Views\Home\UploadStudent.cshtml" />
     <Content Include="Views\Home\UploadStaff.cshtml" />
+    <Content Include="Views\Home\MessagePanel.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

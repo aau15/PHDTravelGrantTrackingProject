@@ -71,7 +71,7 @@
                     <table class="table table-striped table-bordered table-hover"  id="dataTables-example">
                         <thead>
                             <tr style="" >
-
+                                <th class="hidden">Sentinal</th>
                                 <th class="hidden">ID</th>
                                 @if (Model.role == 2)
                                 {
@@ -96,6 +96,7 @@
                             {                                                               
                                 <tr class="gradeA">
                                 <td class="hidden"></td>
+                                <td class="hidden">@Model.previewList[i].tripID</td>
                                     @if (Model.role == 2)
                                     {
                                         <td>@Model.previewList[i].SupervisorName</td>
@@ -448,9 +449,9 @@
             var createClickHandler =
                 function (row) {
                     return function () {
-                        var cell = row.getElementsByTagName("td")[0];
+                        var cell = row.getElementsByTagName("td")[1];
                         var id = cell.innerHTML;
-                        window.location.href = '@Url.Action("Blank", "Home")/' + id;
+                        window.location.href = '@Url.Action("Application", "Home")/' + id;
                        /* $.ajax({
                             url: 'Blank',
                             type: 'POST',

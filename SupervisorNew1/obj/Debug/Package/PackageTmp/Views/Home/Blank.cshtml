@@ -33,6 +33,8 @@
                             <form method="post">
                                 <button style="margin-right:20px" type="submit" value="dispatchFund" name="operation" class="btn btn-outline btn-primary" onclick="return confirm('Confirm payment of funds to student?')">Confirm Payment</button>
                                 <input name="tripId" hidden="hidden" value=@Model.tripID />
+                                <input name="maxAllowed" hidden="hidden" value=@Model.maxAllowed />
+                         
                             </form>
 
                         </td>
@@ -800,7 +802,7 @@
                                         {
                                             if(Model.isFundDispatched == 0)
                                             { 
-                                            <button type="submit" style="color:white" name="operation" value="reset" class="btn btn-link" onclick="return confirm('Confirm to revert your decision for this application?')">Reset</button>
+                                            <button type="submit" style="color:white" name="operation" value="reset" class="btn btn-link" onclick="return confirm('Confirm to revert your decision for this application?')">Revert</button>
                                         }
                                         }
                                         <input name="tripId" hidden="hidden" value=@Model.tripID />
