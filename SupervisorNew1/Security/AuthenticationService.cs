@@ -9,11 +9,9 @@ namespace SupervisorNew1.Security
 {
     public class AuthenticationService
     {
+        //method which queries the database to check if user has valid credential and returns the name of the user 
         public static Tuple<string,int> SignIn(string userName, string pwd, bool createPersistentCookie)
         {
-
-     //       if (String.IsNullOrEmpty(userName))
-      //          throw new ArgumentException("Value cannot be null or empty.", "userName");
 
             if(String.IsNullOrEmpty(userName) || String.IsNullOrEmpty(pwd))
             {
@@ -65,23 +63,7 @@ namespace SupervisorNew1.Security
                 return null;
             }
 
-            //if (userName == "s1234" && pwd == "password") // mock login
-            //{
-
-            //  //  Membership.ValidateUser(userName, pwd);
-            //    FormsAuthentication.SetAuthCookie(userName, createPersistentCookie);
-            //    return "Sophia"; //static for now
-
-            //}
-            //else if(userName == "t1234" && pwd == "password")
-            //{
-            //    FormsAuthentication.SetAuthCookie(userName, createPersistentCookie);
-            //    return "Larry";
-            //}
-            //else
-            //{
-            //    return null;
-            //}
+      
         }
 
         public static void SignOut()

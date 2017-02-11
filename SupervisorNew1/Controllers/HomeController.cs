@@ -22,46 +22,14 @@ namespace SupervisorNew1.Controllers
     public class HomeController : Controller
     {
          
-        //public ActionResult MessagePanel()
-        //{
-        //    try
-        //    {
-        //        if (Session["LoginData"] != null)
-        //        {
-        //            DataBase db = new DataBase();
 
-        //            LoginData lg = (LoginData)Session["LoginData"];
-        //            string sqlNewMsg = "";
-        //            if (lg.role == 1)
-        //            {
-        //                sqlNewMsg = "select count(messageid) as size from message where supervisorid ='" + lg.username + "' and seenbysup = 0";
-        //            }
-        //            else if (lg.role == 2)
-        //            {
-        //                sqlNewMsg = "select count(messageid) as size from message where tutorid = '" + lg.username + "' and seenbytut =0";
-        //            }
-
-        //            FundsUsedPYearList flist = new FundsUsedPYearList();
-        //            flist.newMsgSize = Convert.ToString(db.RunProcReturn(sqlNewMsg, "table").Tables[0].Rows[0]["size"]);
-        //            return View(flist);
-        //        }
-        //        else
-        //        {
-        //            return RedirectToAction("Index");
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return null;
-        //    }
-           
-        //}
-
-
+        //controller for loading of index page(home page)
+        //deals with retrieving data from the database for notification panel and funds usage chart
         public ActionResult Index()
         {
             RefreshSession();
-            if (Session["LoginData"] == null)
+
+            if (Session["LoginData"] == null) // check current login status , redirect to login page if user's not logged in 
             {
                 ViewBag.message = "Please Sign in first";
                 return RedirectToAction("Login"); 
@@ -73,6 +41,8 @@ namespace SupervisorNew1.Controllers
             string sqlNewMsg = "";
             string sqlNewDoc = "";
 
+            //use different queries for different user role
+            //get funds usage and various category metrics from database 
             if(lg.role == 1)
             {
                 sql = "select student.name, student.studentid, traveldate, month(traveldate) as mon, year(traveldate) as y, amountreceived from trip join student on trip.studentid = student.studentid join supervisor on student.supervisorid = supervisor.supervisorid where isfunddispatched = 1 AND student.supervisorid = '" + lg.username + "' order by traveldate asc;";
@@ -87,6 +57,7 @@ namespace SupervisorNew1.Controllers
                 sql = "select supervisor.name as supname, student.supervisorid, student.name, student.studentid, traveldate, month(traveldate) as mon,year(traveldate) as y, amountreceived from trip join student on trip.studentid = student.studentid join supervisor on student.supervisorid = supervisor.supervisorid where isfunddispatched = 1 order by traveldate asc;";
             }
             
+            //get size of new application for supervisor and admin, size of pending application for tutor
             if(lg.role == 1 )
             {
                 sqlAppSize = "select count(tripid) as size from trip join student on trip.studentid = student.studentid where status = 1 and supervisorid  ='" + lg.username + "' ;";
@@ -101,7 +72,7 @@ namespace SupervisorNew1.Controllers
             }
           
 
-
+            //get size of unread message 
             if(lg.role == 1 )
             {
                 sqlNewMsg = "select count(messageid) as size from message where supervisorid ='"+ lg.username+"' and seenbysup = 0";
@@ -111,6 +82,7 @@ namespace SupervisorNew1.Controllers
                 sqlNewMsg = "select count(messageid) as size from message where tutorid = '" + lg.username + "' and seenbytut =0";
             }
             
+            //get size of un-downloaded document
             if(lg.role == 1)
             {
                 sqlNewDoc = "select count(docid) as size from documents join trip on documents.tripid = trip.tripid join student on trip.studentid = student.studentid where student.supervisorid ='" + lg.username + "' and documents.statusSup = 0";
@@ -120,7 +92,7 @@ namespace SupervisorNew1.Controllers
                 sqlNewDoc = "select count(docid) as size from documents join trip on documents.tripid = trip.tripid join student on trip.studentid = student.studentid where student.tutorid ='" + lg.username + "' and documents.statusTut = 0";
             }
          
-            //ad.allFundedTrips = new List<FundedTrip>();
+          
 
             //////////// annual funds usage///////
             try
@@ -153,6 +125,8 @@ namespace SupervisorNew1.Controllers
 
                 flist.fundsUsedPerYearList = new List<FundsUsedPerYear>();
               
+                // the logic is to set the first element as the current ultilized element, then traverse the list 
+                // and add the funds used to the previous bulk of element as long as the year of the funds usage is the same
                 for (int i = 0; i < dt.Rows.Count;)
                 {
                     FundsUsedPerYear f = new FundsUsedPerYear();
@@ -186,6 +160,10 @@ namespace SupervisorNew1.Controllers
                 total.totalFundsUsed = Convert.ToInt32(totalFundsUsed);
                 flist.fundsUsedPerYearList.Add(total);
 
+
+
+                // the logic is to set the first element as the current ultilized element, then traverse the list 
+                // and add the funds used to the previous bulk of element as long as the student id is the same
                 ///////// funds per student ///////////
                 DataView dv = dt.DefaultView;
                 dv.Sort = "studentid asc";
@@ -231,6 +209,9 @@ namespace SupervisorNew1.Controllers
                 fs.totalFundsUsed = flist.fundsUsedPerYearList.Last().totalFundsUsed;
                 flist.fundsUsedPerStudentList.Add(fs);
 
+
+
+                //use list of list for this chart, first list checks the month and second list checks the student
                 /////////////////// Student monthly chart/////////////////////////////////
                 flist.fundsUsedPerStudentPerMonthList = new List<studentMonthlyList>();
                 dv.Sort = "studentid, y, mon asc";
@@ -248,8 +229,6 @@ namespace SupervisorNew1.Controllers
                     if(currentStudentID.Equals(tempStudentid))
                     {
 
-                      //  CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName (DateTime.Now.Month);
-                     //   string tempM = Convert.ToDateTime(sortedDT.Rows[i]["traveldate"].ToString()).Month.ToString();
                         if(currentMonth==tempM)
                         {
                             double tempfunds = Convert.ToDouble(fperMonth.totalFundsUsed);
@@ -278,6 +257,7 @@ namespace SupervisorNew1.Controllers
                         }
                         fperMonth = new FundsUsedPerStudentMonth();
                         currentMonth = tempM;
+                        //get first 3 characters of the current month
                         fperMonth.month = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(Convert.ToInt32(tempM)).Substring(0, 3) + " " + Convert.ToDateTime(sortedDT.Rows[i]["traveldate"].ToString()).Year.ToString().Substring(2, 2); 
                         fperMonth.totalFundsUsed = Convert.ToInt32(sortedDT.Rows[i]["amountreceived"]);
 
@@ -292,19 +272,12 @@ namespace SupervisorNew1.Controllers
                         sMList.name = sortedDT.Rows[i]["name"].ToString();
                         sMList.fStudentMonthlyList = new List<FundsUsedPerStudentMonth>();
                     }
-
-
-                    
-
-
-
-
-
                 }
                 sMList.fStudentMonthlyList.Add(fperMonth);
                 flist.fundsUsedPerStudentPerMonthList.Add(sMList);
 
-
+                // the logic is to set the first element as the current ultilized element, then traverse the list 
+                // and add the funds used to the previous bulk of element as long as the supervisor id is the same
                 ///////////////////// graph by supervisor//////////////////////////////
                 flist.fundsUsedPerSupList = new List<FundsUsedPerSup>();
                 if(lg.role == 2 || lg.role == 3)
@@ -367,36 +340,19 @@ namespace SupervisorNew1.Controllers
            
         }
 
-        public ActionResult FlotCharts()
-        {
-            RefreshSession();
-              if (Session["LoginData"] == null)
-            {
-                ViewBag.message = "Please Sign in first";
-                return RedirectToAction("Login");              
-            }
-            return View("FlotCharts");
-        }
+      
 
-        public ActionResult MorrisCharts()
-        {
-            RefreshSession();
-            if (Session["LoginData"] == null)
-            {
-                ViewBag.message = "Please Sign in first";
-                return RedirectToAction("Login"); 
-            }
-            return View("MorrisCharts");
-        }
-
+       
         public ActionResult Tables() // listing of all applications 
         {
             RefreshSession();
-            if (Session["LoginData"] == null) //check login
+
+            if (Session["LoginData"] == null) // check current login status , redirect to login page if user's not logged in 
             {
                 ViewBag.message = "Please Sign in first";
                 return RedirectToAction("Login"); 
             }
+
             LoginData lg = (LoginData)(Session["LoginData"]);
             string currentUserName = lg.username;//get user id 
             DataBase data = new DataBase(); //create db instance 
@@ -427,6 +383,7 @@ namespace SupervisorNew1.Controllers
                 }
                 int status = Convert.ToInt32(dt.Rows[i]["status"]);
 
+                // set status based on the status flag in the database
                 if(status == 1)
                 {
                     ap.status = "New";
@@ -450,10 +407,13 @@ namespace SupervisorNew1.Controllers
                 
 
                 ap.conferenceName = dt.Rows[i]["conferencename"].ToString();
+
+                // if conference name is empty, means the purpose field is used instead
                 if(String.IsNullOrEmpty(ap.conferenceName)||String.IsNullOrWhiteSpace(ap.conferenceName))
                 {
                     ap.conferenceName = dt.Rows[i]["purpose"].ToString();
                 }
+
                 ap.cost = dt.Rows[i]["costoftrip"].ToString();
                 ap.cityCountry = dt.Rows[i]["city"].ToString() + ", " + dt.Rows[i]["country"].ToString();
                 if (ap.cityCountry == " ,  " || ap.cityCountry == ", ")
@@ -468,10 +428,11 @@ namespace SupervisorNew1.Controllers
             return View(aps);
         }
 
+        //method to load the listing of all un-downloaded document
         public ActionResult NewDocument()
         {
 
-            if (Session["LoginData"] == null) //check login
+            if (Session["LoginData"] == null) // check current login status , redirect to login page if user's not logged in 
             {
                 ViewBag.message = "Please Sign in first";
                 return RedirectToAction("Login");
@@ -529,10 +490,10 @@ namespace SupervisorNew1.Controllers
             return View("Tables", aps);
         }
 
-
+        //method to load the listing of all un-read messages
         public ActionResult NewMessage()
         {
-            if (Session["LoginData"] == null) //check login
+            if (Session["LoginData"] == null) // check current login status , redirect to login page if user's not logged in 
             {
                 ViewBag.message = "Please Sign in first";
                 return RedirectToAction("Login");
@@ -583,19 +544,21 @@ namespace SupervisorNew1.Controllers
                 aps.previewList.Add(ap);
             }
             aps.operation = 6;
-            // data.Close();
-            // string studentName = dt.Rows[0]["name"].ToString();
+
             return View("Tables", aps);
         }
 
+        //method to load the listing of all new applications
         public ActionResult NewApplication()
         {
             RefreshSession();
-            if (Session["LoginData"] == null) //check login
+
+            if (Session["LoginData"] == null) // check current login status , redirect to login page if user's not logged in 
             {
                 ViewBag.message = "Please Sign in first";
                 return RedirectToAction("Login");
             }
+
             LoginData lg = (LoginData)(Session["LoginData"]);
             string currentUserName = lg.username;//get user id 
             DataBase data = new DataBase(); //create db instance 
@@ -641,19 +604,21 @@ namespace SupervisorNew1.Controllers
                 aps.previewList.Add(ap);
             }
             aps.operation = 2;
-            // data.Close();
-            // string studentName = dt.Rows[0]["name"].ToString();
+          
             return View("Tables",aps);
         }
 
+        //method to load the listing of all pending application (pending tutor's decision)
         public ActionResult PendingApplication()
         {
             RefreshSession();
-            if (Session["LoginData"] == null) //check login
+
+            if (Session["LoginData"] == null) // check current login status , redirect to login page if user's not logged in 
             {
                 ViewBag.message = "Please Sign in first";
                 return RedirectToAction("Login");
             }
+
             LoginData lg = (LoginData)(Session["LoginData"]);
             string currentUserName = lg.username;//get user id 
             DataBase data = new DataBase(); //create db instance 
@@ -702,19 +667,19 @@ namespace SupervisorNew1.Controllers
           
             aps.operation = 3;
             return View("Tables", aps);
-
-
-
         }
 
+        //method to load the listing of all approved application (approved by both staffs)
         public ActionResult ApprovedApplication()
         {
             RefreshSession();
-            if (Session["LoginData"] == null) //check login
+
+            if (Session["LoginData"] == null) // check current login status , redirect to login page if user's not logged in 
             {
                 ViewBag.message = "Please Sign in first";
                 return RedirectToAction("Login");
             }
+
             LoginData lg = (LoginData)(Session["LoginData"]);
             string currentUserName = lg.username;//get user id 
             DataBase data = new DataBase(); //create db instance 
@@ -762,17 +727,16 @@ namespace SupervisorNew1.Controllers
                 aps.previewList.Add(ap);
             }
 
-            // data.Close();
-            // string studentName = dt.Rows[0]["name"].ToString();
             aps.operation = 4;
             return View("Tables", aps);
 
         }
 
+        //method to load the listing of all approved application (rejected by both staffs)
         public ActionResult RejectedApplication()
         {
             RefreshSession();
-            if (Session["LoginData"] == null) //check login
+            if (Session["LoginData"] == null) // check current login status , redirect to login page if user's not logged in 
             {
                 ViewBag.message = "Please Sign in first";
                 return RedirectToAction("Login");
@@ -833,76 +797,8 @@ namespace SupervisorNew1.Controllers
             return View("Tables", aps);
         }
 
-        public ActionResult Forms()
-        {
-            if (Session["LoginData"] == null)
-            {
-                ViewBag.message = "Please Sign in first";
-                return RedirectToAction("Login"); 
-            }
-            return View("Forms");
-        }
 
-        public ActionResult Panels()
-        {
-            if (Session["LoginData"] == null)
-            {
-                ViewBag.message = "Please Sign in first";
-                return RedirectToAction("Login"); 
-            }
-            return View("Panels");
-        }
-
-        public ActionResult Buttons()
-        {
-            if (Session["LoginData"] == null)
-            {
-                ViewBag.message = "Please Sign in first";
-                return RedirectToAction("Login"); 
-            }
-            return View("Buttons");
-        }
-
-        public ActionResult Notifications()
-        {
-            if (Session["LoginData"] == null)
-            {
-                ViewBag.message = "Please Sign in first";
-                return RedirectToAction("Login"); 
-            }
-            return View("Notifications");
-        }
-
-        public ActionResult Typography()
-        {
-            if (Session["LoginData"] == null)
-            {
-                ViewBag.message = "Please Sign in first";
-                return RedirectToAction("Login"); 
-            }
-            return View("Typography");
-        }
-
-        public ActionResult Icons()
-        {
-            if (Session["LoginData"] == null)
-            {
-                ViewBag.message = "Please Sign in first";
-                return RedirectToAction("Login"); 
-            }
-            return View("Icons");
-        }
-
-        public ActionResult Grid()
-        {
-            if (Session["LoginData"] == null)
-            {
-                ViewBag.message = "Please Sign in first";
-                return RedirectToAction("Login"); 
-            }
-            return View("Grid");
-        }
-
+        //ajax method to update the database, changing the flag "seenBy..." to 1. only triggers if trip has un-read trip
         [HttpPost]
         public ActionResult UpdateSeen(string id)
         {
@@ -944,45 +840,21 @@ namespace SupervisorNew1.Controllers
             return null;
         }
 
-        [HttpPost]
-        public ActionResult Download(string tripid)
-        {
-
-                RefreshSession();
-                DataBase data = new DataBase();
-                string sql = "select doctitle, docbody,doctype from documents where tripid =" + tripid + ";";
-                DataTable dt = data.RunProcReturn(sql, "table").Tables[0];
-                byte[] file = (byte[])(dt.Rows[0]["docbody"]);
-
-                MemoryStream ms = new MemoryStream(file);
-                //Response.ContentType = "application/" + dt.Rows[0]["doctype"].ToString();
-                //Response.AddHeader("Content-Disposition",
-                //               "attachment; filename=" + dt.Rows[0]["doctitle"].ToString() + ";");
-
-
-
-
-
-
-
-
-
-
-                return new FileContentResult(file, "force/pdf");
-              //  return File(file, System.Net.Mime.MediaTypeNames.Application.Octet, dt.Rows[0]["doctitle"].ToString() + ".pdf");
-            //    return new FileStreamResult(ms, "application/pdf");
-        }
-
+     
+        //handles publishing of data from database before entering the application page
         public ActionResult Application(string id, string viewBagMsg) 
         {
             RefreshSession();
-            if (Session["LoginData"] == null)
+
+            if (Session["LoginData"] == null)// check current login status , redirect to login page if user's not logged in 
             {
                 ViewBag.message = "Please Sign in first";
                 return RedirectToAction("Login");              
             }
 
             LoginData lg = (LoginData)Session["LoginData"];
+
+            // 5mins lock time 
             if(!checkTimeStamp(Convert.ToInt32(id),lg.username))
             {
                 return Content("<script language='javascript' type='text/javascript'>alert('Sorry, but it seems like someone else is making changes to this application');window.history.back();</script>");
@@ -992,11 +864,8 @@ namespace SupervisorNew1.Controllers
 
            
             string sql = "";
-            if(lg.role==5)
-             sql = "select email, trip.studentid,trip.tripid,name, email, maxclaim,student.maxclaim12m,  monthscompleted, dofreg, feepayer, feelpaid, conferencename, conferenceurl, city, country, papertitle, author, purpose," 
-            +" status, costoftrip,traveldate,enddate,submissiondate, regfeecal,regfee,transfeecal,transfee,accfeecal,accfee,mealfeecal,mealfee,otherfeecal,otherfee,scomment, from supervisor join student on supervisor.supervisorid = student.supervisorid join trip on student.studentid = trip.studentid join ecost on trip.tripid = ecost.tripid where trip.tripid ="+id+";";
-            else
-                sql = "select currency, email, isfunddispatched,oktofund, maxtofund, tcomment, scomment, trip.studentid,trip.tripid,student.name, email, maxclaim,student.maxclaim12m,  monthscompleted, dofreg, feepayer, feelpaid, conferencename, conferenceurl, city, country, papertitle, author, purpose,"
+           
+            sql = "select currency, email, isfunddispatched,oktofund, maxtofund, tcomment, scomment, trip.studentid,trip.tripid,student.name, email, maxclaim,student.maxclaim12m,  monthscompleted, dofreg, feepayer, feelpaid, conferencename, conferenceurl, city, country, papertitle, author, purpose,"
                 + " status, costoftrip,traveldate,enddate,submissiondate, regfeecal,regfee,transfeecal,transfee,accfeecal,accfee,mealfeecal,mealfee,otherfeecal,otherfee from supervisor join student on supervisor.supervisorid = student.supervisorid join trip on student.studentid = trip.studentid join ecost on trip.tripid = ecost.tripid where trip.tripid =" + id + ";";
 
             try
@@ -1005,20 +874,22 @@ namespace SupervisorNew1.Controllers
                 DataBase data = new DataBase(); //create db instance 
                 DataTable dt = data.RunProcReturn(sql, "table").Tables[0];//get all needed data except the past travel record and put into datatable 
                 string studentid = dt.Rows[0]["studentid"].ToString();
+                //past travel history
                 string sqlPastTravel = "select traveldate, submissiondate,amountreceived,conferencename from trip where status = 3 and isfunddispatched = 1 and studentid ='" + studentid + "';"; //find all records which has the studentid and approved by tutor (means funds dispatched)
                 DataTable dtPastTravel = data.RunProcReturn(sqlPastTravel, "table").Tables[0];
+                //all messages
                 string sqlMessage = "select messageid,messagetitle, messagebody,  sendername, timestamp, seenbysup, seenbystudent, seenbytut from message where tripid ='" + id + "' order by timestamp desc;";
                 DataTable dtMessage = data.RunProcReturn(sqlMessage, "table").Tables[0];
+                //all documents (supporting documents and travel report)
                 string sqlDocument = "select purpose from documents where tripid =" + id + " order by purpose asc;";
                 DataTable dtDocument = data.RunProcReturn(sqlDocument, "table").Tables[0];
 
-                
-
-
                 ApplicationDetail ad = new ApplicationDetail();
-               
+                    
+                // check if there is supporting document and if there is travel report
                     int a = 1;
                     int b = 2;
+                    //check if 1 and 2 exist in 'purpose' column
                     bool supportingDocument = dtDocument.AsEnumerable().Any(row => a == row.Field<int>("purpose"));
                     bool travelReport = dtDocument.AsEnumerable().Any(row => b == row.Field<int>("purpose"));
                     if(supportingDocument)
@@ -1045,7 +916,7 @@ namespace SupervisorNew1.Controllers
 
                 
                   
-               
+                //add message in to view model list
                 ad.messageList = new List<Message>();
                 ad.isThereNewMsg = 0;
                 for (int i = 0; i < dtMessage.Rows.Count; i++)
@@ -1054,10 +925,8 @@ namespace SupervisorNew1.Controllers
                     m.messageBody = dtMessage.Rows[i]["messagebody"].ToString();
                     m.messageTitle = dtMessage.Rows[i]["messagetitle"].ToString();
                     m.senderName = dtMessage.Rows[i]["sendername"].ToString();
-                    DateTime ts = Convert.ToDateTime(dtMessage.Rows[i]["timestamp"].ToString());
-                    //ts = ts.AddHours(8.0);
+                    DateTime ts = Convert.ToDateTime(dtMessage.Rows[i]["timestamp"].ToString());                
                     m.timeStamp = ts.ToString();
-                    
                     m.messageId = dtMessage.Rows[i]["messageid"].ToString();
                     if (!m.senderName.Equals(lg.name))
                     {
@@ -1095,7 +964,8 @@ namespace SupervisorNew1.Controllers
                     ad.messageList.Add(m);
                     ad.messageCount++;
                 }
-
+                
+                //if role is not supervisor or trip is not new application, add isfunddispatched, supervisor comment and ok for supervisor to fund into the list
                 if (lg.role == 2 ||lg.role ==3 || lg.role == 1 && Convert.ToInt32(dt.Rows[0]["status"]) != 1)
                 {
                     ad.isFundDispatched = Convert.ToInt32(dt.Rows[0]["isfunddispatched"]);
@@ -1127,7 +997,7 @@ namespace SupervisorNew1.Controllers
                 else ad.role = 1;
 
 
-
+                //put data in the datatable into the view model  
                 ad.studentID = dt.Rows[0]["studentid"].ToString();
                 ad.tripID = dt.Rows[0]["tripid"].ToString();
                 ad.studentName = dt.Rows[0]["name"].ToString();
@@ -1164,6 +1034,7 @@ namespace SupervisorNew1.Controllers
                 ad.studentEmail = dt.Rows[0]["email"].ToString();
                 ad.currency = dt.Rows[0]["currency"].ToString();
 
+                //put past travel history into view model and calculate past travel funds usage
                 double totalFundsUsed = 0.0;
                 double totalFundsUsed12M = 0.0;
                 for (int i = 0; i < dtPastTravel.Rows.Count; i++)
@@ -1185,26 +1056,25 @@ namespace SupervisorNew1.Controllers
                 }
                 ad.totalClaimed = totalFundsUsed.ToString();
                 ad.claimed12M = totalFundsUsed12M.ToString();
+
+                //calculate remaining amount in the student account
                 double totalRemained = 3000 - totalFundsUsed;
                 double totalRemained12M = 2000 - totalFundsUsed12M;
                 ad.totalRemained = Convert.ToString(totalRemained);
                 ad.remained12M = Convert.ToString(totalRemained12M);
                 double totalFee = Convert.ToDouble(dt.Rows[0]["costoftrip"]);
+                //calculate maximum allowed amount according the formula provided
                 ad.maxAllowed = Convert.ToString(Math.Max(0, Min(totalFee, 1250, totalRemained, totalRemained12M)));
 
                 Session["ApplicationDetail"] = ad;
 
 
-
+                //method to handle refresh of page (make sure refresh of page doesn't resubmit the form)
                 if (TempData.ContainsKey("redirect"))
                 {
                     
                      ViewBag.message = viewBagMsg;
                      TempData.Remove("redirect");
-
-                    //ViewData.Clear();
-                    //it means that you reload this method or you click on the link
-                    //be sure to use unique key by request since TempData is use for the next request 
                 }
 
 
@@ -1228,20 +1098,27 @@ namespace SupervisorNew1.Controllers
         {
             return Enumerable.Min(values);
         }
-
+        //custom random string method
         public static string randomString()
         {
             return Guid.NewGuid().ToString().Substring(0, 8);
         }
 
+        //methods which handles all postback action triggered from the application page, it reads all possible url strings which are passed from the View engine
+        //and determines which action the user has performed based on the reading of 'operation' flag
+        //then it performs the action to update the database and the view model accordingly.
         [HttpPost] 
         public ActionResult Application(string studentEmail, string studentname, string studentId,string tripid, string operation, string maxFundInput, string researchAccInput, string commentInput, string messageTitle, string messageBody,string maxAllowed, FormCollection frm)
         {
             RefreshSession();
-            if (Session["LoginData"] == null){
+
+            if (Session["LoginData"] == null)// check current login status , redirect to login page if user's not logged in 
+            {
                 return RedirectToAction("Login");
             }
+
              LoginData lg = (LoginData)Session["LoginData"];
+            //flag which determins whether the page has been refreshed 
             TempData["redirect"] = true;
            
            
@@ -1260,6 +1137,7 @@ namespace SupervisorNew1.Controllers
                 }
             }
 
+            //send message 
             if (operation.Equals("send"))
             {
                 if (messageBody == "" )
@@ -1270,6 +1148,8 @@ namespace SupervisorNew1.Controllers
                 {
                     string senderName = lg.name;
                     string sqlInsertMessage = "";
+                    
+                    //insert the detail of the message into the database, as the database is located in USA, add 8 hours as time zone offset
                     if (lg.role == 1)
                         sqlInsertMessage = "insert into message (sendername, studentid, tutorid, tripid, messagebody, messagetitle, timestamp,seenbysup,seenbystudent,seenbytut) values ('" + senderName + "','" + studentId + "','t1234'," + tripid + ",'" + messageBody + "','" + messageTitle + "', NOW() + INTERVAL 8 HOUR," + "1,0,0);";
                     else if(lg.role ==2)
@@ -1290,6 +1170,7 @@ namespace SupervisorNew1.Controllers
                     }
                 }
 
+                // add message to view model and update view model in the session
                 ApplicationDetail ad = (ApplicationDetail)Session["ApplicationDetail"];
                 Message m = new Message();
                 m.isYours = 1;
@@ -1305,6 +1186,7 @@ namespace SupervisorNew1.Controllers
             }
             else if(operation!="dispatchFund")
             {
+                //downloading of documents
                 if (operation.Equals("download") || operation.Equals("travelReport"))
                 {
                     DataBase data = new DataBase();
@@ -1314,6 +1196,7 @@ namespace SupervisorNew1.Controllers
                     if (operation.Equals("download"))
                     {
 
+                    //turn off the un-downloaded flag 
                      if(lg.role == 1)
                      {
                          sqlupdate = "update documents set statusSup = 1 where tripid =" + tripid + " and purpose = 1";
@@ -1329,6 +1212,7 @@ namespace SupervisorNew1.Controllers
                     }
                     else if(operation.Equals("travelReport"))
                     {
+                        //turn off the un-downloaded flag 
                         if (lg.role == 1)
                         {
                             sqlupdate = "update documents set statusSup = 1 where tripid =" + tripid + " and purpose = 2";
@@ -1343,6 +1227,8 @@ namespace SupervisorNew1.Controllers
                     }
                     DataTable dt = data.RunProcReturn(sql, "table").Tables[0];
                     data.RunProc(sqlupdate);
+
+                    //use memoy stream to hold the bytes data from the database, use zip to package the document to be downloaded as multiple files are allowed
                     MemoryStream ms = new MemoryStream();
                     using (var zip = new ZipFile())
                     {
@@ -1358,16 +1244,14 @@ namespace SupervisorNew1.Controllers
 
                     ms.Position = 0;
                     return File(ms, "application/zip", zipName);
-                    //return File(file, "application/" + dt.Rows[0]["doctype"].ToString(), 
-                    //            dt.Rows[0]["doctitle"].ToString() + "." + dt.Rows[0]["doctype"].ToString());
-                    //  FileContentResult fcr = new FileContentResult(file, "application/pdf");              
+                 
                 }
 
          
 
 
 
-
+                //operation which handles the reverting of decision made by user earlier
                 if(operation.Equals("reset"))
                 {
                     DataBase data = new DataBase();
@@ -1396,7 +1280,7 @@ namespace SupervisorNew1.Controllers
                     return RedirectToAction("Application", new { id = tripid, viewBagMsg = ViewBag.message });
                 }
 
-
+                // set action status based on the actions captured from the user
                 if (operation.Equals("approve"))
                 {
                     if (lg.role == 2)
@@ -1429,37 +1313,39 @@ namespace SupervisorNew1.Controllers
                     {
                         if (lg.role == 1)
                         {
+                            //validate user input before updating the database (empty fields)
                             if (applicationStatus == 2 && (String.IsNullOrEmpty(maxFundInput) && oktoFund == 1 || String.IsNullOrEmpty(researchAccInput) && oktoFund == 1)) //if approve but required detail not entered
                             {
                                 ViewBag.message = "Amount to fund or research account must not be empty!";
                                 if (Session["ApplicationDetail"] != null)
                                 {
-                                    //ApplicationDetail ad = (ApplicationDetail)Session["ApplicationDetail"];
+                                  
                                     return RedirectToAction("Application", new { id = tripid, viewBagMsg = ViewBag.message });
                                 }
                                 else
                                     return RedirectToAction("Index");
                             }
-                            
+
+                            //validate user input before updating the database (datatype correctness)
                             double num;
                             if (!double.TryParse(maxFundInput, out num) && operation.Equals("approve") && lg.role == 1 && oktoFund ==1) //check if its a number
                             {
                                 return RedirectToAction("Application", new { id = tripid, viewBagMsg = "Amount to fund must be a number" });
                             }   
                         }
-                        
-                        if ((applicationStatus == 4 || applicationStatus==5) && String.IsNullOrEmpty(commentInput)) //reject but no comment
+
+                        //validate user input before updating the database (reject must comes with comment input)
+                        if ((applicationStatus == 4 || applicationStatus==5) && String.IsNullOrEmpty(commentInput)) 
                         {
                             ViewBag.message = "Comment can not be empty!";
                             if (Session["ApplicationDetail"] != null)
                             {
-                              //  ApplicationDetail ad = (ApplicationDetail)Session["ApplicationDetail"];
                                 return RedirectToAction("Application", new { id = tripid, viewBagMsg = ViewBag.message });
                             }
                             else
                                 return RedirectToAction("Index");
                         }
-                        else  //approval or reject
+                        else  //approval or reject with no invalid user input
                         {
                             DataBase data = new DataBase();
                             string sql = "";
@@ -1505,12 +1391,13 @@ namespace SupervisorNew1.Controllers
                             }
                             try
                             {
-                                if (data.RunProc(sql) == -1) //update the database 
+                                if (data.RunProc(sql) == -1) //update the database fail
                                 {
                                     ViewBag.message = "Failed to update record!";
                                 }
                                 else 
                                 {
+                                    //aync method to send email to respective student regarding the change of his/her application status 
                                     Task.Run(() => SendEmail(studentname, tripid, studentEmail, applicationStatus.ToString()));
                                 }
                                 
@@ -1521,6 +1408,8 @@ namespace SupervisorNew1.Controllers
                             {
                                 ViewBag.message = "Failed to update record!";
                             }
+                            
+                            //update view model
                             if (Session["ApplicationDetail"] != null)
                             {
                                 ApplicationDetail ad = (ApplicationDetail)Session["ApplicationDetail"];
@@ -1563,6 +1452,8 @@ namespace SupervisorNew1.Controllers
 
                     return RedirectToAction("Index");
             }
+
+            //handles dispatch funds button click,
             else if(operation == "dispatchFund")
             {
                 DataBase data = new DataBase();
@@ -1600,6 +1491,8 @@ namespace SupervisorNew1.Controllers
             return RedirectToAction("Index");
         }
 
+
+        //publish login screen
        public ActionResult Login()
         {
             return View();
@@ -1607,17 +1500,18 @@ namespace SupervisorNew1.Controllers
 
       
 
-
+        //handles user login operation
        [HttpPost]
         public ActionResult Login(string username, string password, FormCollection frm)
         {
 
-            if (Session["LoginData"] != null)
+            if (Session["LoginData"] != null) // check current login status , redirect to login page if user's not logged in 
             {
                 return RedirectToAction("Index");
             }
             else
             {
+                //call authentication module to verify user's credential , then checks the return tuple for login status and user roles 
                 Tuple<string,int> t = AuthenticationService.SignIn(username, password, true);
                 
                
@@ -1640,7 +1534,7 @@ namespace SupervisorNew1.Controllers
                         lg = new LoginData(username, 3, name);//admin == 3
                     }
                     
-                    Session["LoginData"] = lg; //login data
+                    Session["LoginData"] = lg; //save login data to session
 
                    
                     return RedirectToAction("Index");
@@ -1656,6 +1550,7 @@ namespace SupervisorNew1.Controllers
            
         }
 
+        //method that handles logout
         public ActionResult Logout()
         {
             AuthenticationService.SignOut();
@@ -1663,12 +1558,14 @@ namespace SupervisorNew1.Controllers
             return RedirectToAction("Login");
         }
 
+        //method to send email, get parameters from application method
         public  void  SendEmail (string studentName, string tripid, string studentEmail, string msg)
         {
             string statusString = "";
             string statusMsgFront = "";
             int status = Convert.ToInt32(msg);
 
+            //generate email message based on status change
             if(status == 2)
             {
                 statusString = "approved by your supervisor and is now pending tutor's approval.";
@@ -1690,7 +1587,8 @@ namespace SupervisorNew1.Controllers
                 statusMsgFront = "Unfortunately, ";
 
             }
-          //  int isSuccess = 0;
+          
+            //define email sending protocols and credentials
             try
             {
                 MailMessage mail = new MailMessage();
@@ -1700,10 +1598,7 @@ namespace SupervisorNew1.Controllers
                 mail.To.Add(studentEmail);
                 mail.Subject = "Status of your application has been changed";
                 mail.IsBodyHtml = true;
-                //mail.Body = "<font size = \"9\"><b>PHD EASY TRAVEL </b></font> <br />  Your account Password have been reset! <br />  <br />  <br /> " +
-                //"<font size = \"5\">Login Details: </font> <br />" +
-                //"<b>Username:</b> <i>" + username + "</i> <br />" +
-                //"<b>Password:</b> <i>" + randomPass + "</i> <br /> <br />  <br />  <br />  <br />  <br />" +
+             
 
                 mail.Body = "<i>Dear " + studentName + ":<i> <br /><br />" +
                            statusMsgFront+ "<i>Your application #" + tripid + " has been <i>"+statusString+" <br/><br/> " +
@@ -1724,7 +1619,7 @@ namespace SupervisorNew1.Controllers
             {
                 
             }
-          //  isSuccess = 1;
+      
 
 
            
@@ -1742,36 +1637,38 @@ namespace SupervisorNew1.Controllers
             }
         }
 
+        //5 mins lock to enhance occurency control
         public bool checkTimeStamp(int tripid,string userid)
         {
+          //  return true;
+            DataBase db = new DataBase();
             return true;
-            //DataBase db = new DataBase();
-            //DataTable dt = db.RunProcReturn("select now() as currenttime,lastaccessed,accessid from trip where tripid=" + tripid + ";", "table").Tables[0];
-            //DateTime lastAccessed = Convert.ToDateTime(dt.Rows[0]["lastaccessed"]).ToUniversalTime();
-            //DateTime now = Convert.ToDateTime(dt.Rows[0]["currenttime"]).AddHours(8).ToUniversalTime();
-            //string accessid = dt.Rows[0]["accessid"].ToString();
-            // if(lastAccessed.AddMinutes(5)>= now)
-            // {
-            //     if (userid.Equals(accessid))
-            //     {
-            //         return true;
-            //     }
-            //     else
-            //     {
-            //         return false;
-            //     }
-                 
-            // }
-            // else
-            // {
-            //     return true;
-            // }
+            /*
+            DataTable dt = db.RunProcReturn("select now() as currenttime,lastaccessed,accessid from trip where tripid=" + tripid + ";", "table").Tables[0];
+            DateTime lastAccessed = Convert.ToDateTime(dt.Rows[0]["lastaccessed"]).ToUniversalTime();
+            DateTime now = Convert.ToDateTime(dt.Rows[0]["currenttime"]).AddHours(8).ToUniversalTime();
+            string accessid = dt.Rows[0]["accessid"].ToString();
+            if (lastAccessed.AddMinutes(5) >= now)
+            {
+                if (userid.Equals(accessid))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            else
+            {
+                return true;
+            }
+              */
 
         }
 
-
-
-
+        //update the 5 mins lock if the same user access the application
         [HttpPost]
         public ActionResult UpdateTime(int tripid)
         {
@@ -1787,7 +1684,7 @@ namespace SupervisorNew1.Controllers
             return null;
         }
 
-        
+        //update the 5 mins lock if the same user access the application (non postback version)
         public void _UpdateTime(int tripid, string accessId)
         {
             DataBase db = new DataBase();
@@ -1801,305 +1698,9 @@ namespace SupervisorNew1.Controllers
             }
           
         }
-       
-       
-        public ActionResult ChangeGBP()
-        {
-            LoginData lg = null;
-            int status = 0;
-            if(Session["LoginData"]==null)
-            {
-                return Content("<script language='javascript' type='text/javascript'>alert('You must login first before changing currency');window.history.back();</script>");
-            }
-            else
-            {
-                lg = (LoginData)Session["LoginData"];
-                status = UpdateCurrency("GBP", lg.username);
-             
-            }
-            if (status == -1)
-            {
-
-                return Content("<script language='javascript' type='text/javascript'>alert('Update failed');window.history.back();</script>");
-            }
-            return Content("<script language='javascript' type='text/javascript'>alert('Update currency successful');window.history.back();</script>");
-
-        }
-        public ActionResult ChangeUSD()
-        {
-            LoginData lg = null;
-            int status = 0;
-            if (Session["LoginData"] == null)
-            {
-                return Content("<script language='javascript' type='text/javascript'>alert('You must login first before changing currency');window.history.back();</script>");
-            }
-            else
-            {
-                lg = (LoginData)Session["LoginData"];
-                status = UpdateCurrency("USD", lg.username);
-            }
-            if(status ==-1)
-            {
-                return Content("<script language='javascript' type='text/javascript'>alert('Update failed');window.history.back();</script>");
-            }
-            return Content("<script language='javascript' type='text/javascript'>alert('Update currency successful');window.history.back();</script>");
-        }
-        public ActionResult ChangeEURO()
-        {
-            LoginData lg = null;
-            int status = 0;
-            if (Session["LoginData"] == null)
-            {
-
-                return Content("<script language='javascript' type='text/javascript'>alert('You must login first before changing currency');window.history.back();</script>");
-            }
-            else
-            {
-                lg = (LoginData)Session["LoginData"];
-                status = UpdateCurrency("EURO", lg.username);
-            }
-            if (status == -1)
-            {
-                return Content("<script language='javascript' type='text/javascript'>alert('Update failed');window.history.back();</script>");
-            }
-            return Content("<script language='javascript' type='text/javascript'>alert('Update currency successful');window.history.back();</script>");
-        }
-        public ActionResult ChangeCNY()
-        {
-            LoginData lg = null;
-            int status = 0;
-            if (Session["LoginData"] == null)
-            {
-                return Content("<script language='javascript' type='text/javascript'>alert('You must login first before changing currency');window.history.back();</script>");
-            }
-            else
-            {
-                lg = (LoginData)Session["LoginData"];
-                status = UpdateCurrency("CNY", lg.username);
-            }
-            if (status == -1)
-            {
-                return Content("<script language='javascript' type='text/javascript'>alert('Update failed');window.history.back();</script>");
-            }
-            return Content("<script language='javascript' type='text/javascript'>alert('Update currency successful');window.history.back();</script>");
-        }
-
-        private int UpdateCurrency(string currency, string id)
-        {
-            try
-            {
-                DataBase db = new DataBase();
-                db.RunProc("update supervisor set currency = '" + currency + "' where supervisorid = '" + id + "';");
-            }
-            catch(Exception)
-            {
-                return -1;
-            }
-            return 0;
-        }
 
 
-        public ActionResult UploadStudent()
-        {
-            return View();
-        }
 
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult UploadStudent(HttpPostedFileBase upload)
-        {
-            if (ModelState.IsValid)
-            {
-
-                if (upload != null && upload.ContentLength > 0)
-                {
-                    // ExcelDataReader works with the binary Excel file, so it needs a FileStream
-                    // to get started. This is how we avoid dependencies on ACE or Interop:
-                    Stream stream = upload.InputStream;
-
-                    // We return the interface, so that
-                    IExcelDataReader reader = null;
-
-
-                    if (upload.FileName.EndsWith(".xls"))
-                    {
-                        reader = ExcelReaderFactory.CreateBinaryReader(stream);
-                    }
-                    else if (upload.FileName.EndsWith(".xlsx"))
-                    {
-                        reader = ExcelReaderFactory.CreateOpenXmlReader(stream);
-                    }
-                    else
-                    {
-                        ModelState.AddModelError("File", "This file format is not supported");
-                        return View();
-                    }
-
-                    reader.IsFirstRowAsColumnNames = true;
-
-                    DataSet result = reader.AsDataSet();
-                    
-                    reader.Close();
-
-                    return View(result.Tables[0]);
-                }
-                else
-                {
-                    ModelState.AddModelError("File", "Please Upload Your file");
-                }
-            }
-            return View();
-        }
-
-        public ActionResult UploadStaff()
-        {
-            return View();
-        }
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult UploadStaff(HttpPostedFileBase upload)
-        {
-            if (ModelState.IsValid)
-            {
-
-                if (upload != null && upload.ContentLength > 0)
-                {
-                    // ExcelDataReader works with the binary Excel file, so it needs a FileStream
-                    // to get started. This is how we avoid dependencies on ACE or Interop:
-                    Stream stream = upload.InputStream;
-
-                    // We return the interface, so that
-                    IExcelDataReader reader = null;
-
-
-                    if (upload.FileName.EndsWith(".xls"))
-                    {
-                        reader = ExcelReaderFactory.CreateBinaryReader(stream);
-                    }
-                    else if (upload.FileName.EndsWith(".xlsx"))
-                    {
-                        reader = ExcelReaderFactory.CreateOpenXmlReader(stream);
-                    }
-                    else
-                    {
-                        ModelState.AddModelError("File", "This file format is not supported");
-                        return View();
-                    }
-
-                    reader.IsFirstRowAsColumnNames = true;
-
-                    DataSet result = reader.AsDataSet();
-                    reader.Close();
-                    string id = "userid";
-                    string name = "name";
-                    string pwd = "password";
-                    
-
-                    DataTable dt = result.Tables[0];
-                    dt.CaseSensitive = false;
-                    if(!dt.Columns.Contains(id) || !dt.Columns.Contains(name)||!dt.Columns.Contains(pwd))
-                    {
-                        return RedirectToAction("Index");
-                    }
-                    int status = writeToDBTableSup(dt);
-                    if(status != 0)
-                    {
-                        return RedirectToAction("Index");
-
-                    }
-                   
-                    return View(result.Tables[0]);
-                }
-                else
-                {
-                    ModelState.AddModelError("File", "Please Upload Your file");
-                }
-            }
-            return View();
-        }
-
-
-        public int writeToDBTableSup(DataTable dt)
-        {
-            DataBase db = new DataBase();
-            
-            String sql = null;
-            String sqlStart = "insert into supervisor (supervisorid, name, pwd, istutor, isadmin, currency) values ";
-
-            //Console.WriteLine("Write to DB - Start. Records to insert  = {0}", dt.Rows.Count);
-            int x = 0;
-
-            foreach (DataRow row in dt.Rows)
-            {
-                x += 1;
-                if (x == 1)
-                {
-                    sql = String.Format(@"({0},{1},{2},{3},{4},{5})",
-                                          row["userid"],
-                                          row["name"],
-                                          row["password"],
-                                          row["0"],
-                                          row["0"],
-                                          row["GBP"]
-                                        
-                                          );
-                }
-                else
-                {
-                    sql = String.Format(sql + @"({0},{1},{2},{3},{4},{5})",
-                                          row["userid"],
-                                          row["supervisorname"],
-                                          row["password"],
-                                          row["0"],
-                                          row["0"],
-                                          row["GBP"]
-
-                                          );
-
-                }
-
-                if (x == 1000)
-                {
-                    try
-                    {
-                        sql = sqlStart + sql;
-                        db.RunProc(sql);
-                       // MySqlCommand cmd = new MySqlCommand(sql, conn);
-                       // cmd.ExecuteNonQuery();
-                       // Console.WriteLine("Write {0}", x);
-                        x = 0;
-                    }
-                    catch (Exception)
-                    {
-                        return -1;
-                    }
-                }
-
-            }
-            // get any straglers
-            if (x > 0)
-            {
-                try
-                {
-                    sql = sqlStart + sql;
-                    db.RunProc(sql);
-                    //cmd.ExecuteNonQuery();
-                    //Console.WriteLine("Write {0}", x);
-                    x = 0;
-                }
-                catch (Exception)
-                {
-                    return -1;
-                }
-
-            }
-            return 0;
-           // conn.Close();
-           // Console.WriteLine("Write to DB - End.");
-        }
 
     }
 }

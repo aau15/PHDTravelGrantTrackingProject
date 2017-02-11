@@ -5,6 +5,10 @@ using System.Web;
 
 namespace SupervisorNew1.Models
 {
+
+    //view model class which serves as the container for date to be passed to the view engine from the database
+
+
     public class AllPreviews
     {
         public List<ApplicationPreview> previewList { get; set; }
