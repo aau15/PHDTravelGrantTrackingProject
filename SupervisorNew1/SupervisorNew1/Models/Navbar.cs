@@ -5,6 +5,7 @@ using System.Web;
 
 namespace SupervisorNew1.Models
 {
+    //information holder for navigation bar
     public class Navbar
     {
         public int Id { get; set; }

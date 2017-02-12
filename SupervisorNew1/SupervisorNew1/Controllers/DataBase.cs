@@ -9,6 +9,7 @@ using System.Collections;
 using System.Data.SqlClient;
 namespace SupervisorNew1.Controllers
 {
+    // database adapter class that handles the communication layer with the database
     public class DataBase : IDisposable
     {
         private MySqlConnection con_mysql;//create connection target
@@ -24,6 +25,7 @@ namespace SupervisorNew1.Controllers
             if (con_mysql.State == ConnectionState.Closed)
                 con_mysql.Open();
         }
+
         //Dispose
         public void Dispose()
         {
@@ -33,12 +35,14 @@ namespace SupervisorNew1.Controllers
                 con_mysql = null;
             }
         }
+
         //close database connection
         public void Close()
         {
             if (con_mysql != null)
                 con_mysql.Close();
         }
+
         //execute query with no return
         public int RunProc(string procName)
         {
